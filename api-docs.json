@@ -1,0 +1,3419 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "https://savetuba.it2-server.com",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Curriculum",
+      "description": "Curriculum management endpoints"
+    },
+    {
+      "name": "Languages",
+      "description": "Language management endpoints"
+    }
+  ],
+  "paths": {
+    "/api/v1/profile/picture": {
+      "put": {
+        "tags": ["profile-controller"],
+        "operationId": "updateProfilePicture",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfilePictureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/profile/password": {
+      "put": {
+        "tags": ["profile-controller"],
+        "operationId": "changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/profile/me": {
+      "get": {
+        "tags": ["profile-controller"],
+        "operationId": "getMyProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["profile-controller"],
+        "operationId": "updateMyProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/lessons/{lessonId}": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get lesson details by ID",
+        "description": "Returns lesson info with activities. Activities don't include content.",
+        "operationId": "getLessonById",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "in": "path",
+            "description": "Lesson ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Language code (en, kk, ru)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/LessonWithActivitiesResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Update an existing lesson with an optional thumbnail file",
+        "description": "Updates lesson fields. Uses multipart/form-data. One part named 'request' contains the JSON data. Another optional part named 'file' contains the new thumbnail image.",
+        "operationId": "updateLesson",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "in": "path",
+            "description": "Lesson ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/UpdateLessonRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "New thumbnail file for the lesson (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Curriculum"],
+        "summary": "Delete a lesson",
+        "operationId": "deleteLesson",
+        "parameters": [
+          {
+            "name": "lessonId",
+            "in": "path",
+            "description": "Lesson ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/grades/{gradeId}": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get grade level details with paginated chapters",
+        "description": "Returns grade level info with paginated chapters. Chapters don't include lessons. The 'isLastPage' field indicates if there are more chapters to load.",
+        "operationId": "getGradeLevel",
+        "parameters": [
+          {
+            "name": "gradeId",
+            "in": "path",
+            "description": "Grade Level ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Language code (en, kk, ru)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (0-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort direction (asc or desc)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "asc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/GradeLevelDetailSwaggerResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Update an existing grade level",
+        "description": "Updates grade level fields. If translations are updated, returns multi-language response with all updated translations.",
+        "operationId": "updateGradeLevel",
+        "parameters": [
+          {
+            "name": "gradeId",
+            "in": "path",
+            "description": "Grade Level ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGradeLevelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Curriculum"],
+        "summary": "Delete a grade level",
+        "operationId": "deleteGradeLevel",
+        "parameters": [
+          {
+            "name": "gradeId",
+            "in": "path",
+            "description": "Grade Level ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/chapters/{chapterId}": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get chapter details with paginated lessons",
+        "description": "Returns chapter info with paginated lessons. Lessons don't include activities. The 'isLastPage' field indicates if there are more lessons to load.",
+        "operationId": "getChapter",
+        "parameters": [
+          {
+            "name": "chapterId",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "exclusiveMinimum": 0
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Language code (en, kk, ru)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (0-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort direction (asc or desc)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "asc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChapterWithLessonsResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Update an existing chapter with an optional icon file",
+        "description": "Updates chapter fields. Uses multipart/form-data. One part named 'request' contains the JSON data. Another optional part named 'file' contains the new icon image.",
+        "operationId": "updateChapter",
+        "parameters": [
+          {
+            "name": "chapterId",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/UpdateChapterRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "New icon file for the chapter (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseObject"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Curriculum"],
+        "summary": "Delete a chapter",
+        "operationId": "deleteChapter",
+        "parameters": [
+          {
+            "name": "chapterId",
+            "in": "path",
+            "description": "Chapter ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get activity details",
+        "description": "Returns activity info with content.",
+        "operationId": "getActivity",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "description": "Activity ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Language code (en, kk, ru)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityWithContentResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Update an existing activity with an optional icon file",
+        "description": "Updates activity fields. Uses multipart/form-data. One part named 'request' contains the JSON data. Another optional part named 'file' contains the new icon image.",
+        "operationId": "updateActivity",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "description": "Activity ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/UpdateActivityRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "New icon file for the activity (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Curriculum"],
+        "summary": "Delete an activity",
+        "operationId": "deleteActivity",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "description": "Activity ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}/content/sorting": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update Sorting/Reorder content for an activity",
+        "description": "Replaces the entire sorting content for the specified activity.",
+        "operationId": "setSortingContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortingContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}/content/quiz": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update Quiz content for an activity",
+        "description": "Replaces the entire quiz content for the specified activity.",
+        "operationId": "setQuizContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}/content/memory": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update Memory Game content for an activity",
+        "description": "Replaces the entire memory game content for the specified activity.",
+        "operationId": "setMemoryContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoryContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}/content/matching": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update Matching content for an activity",
+        "description": "Replaces the entire matching content for the specified activity.",
+        "operationId": "setMatchingContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchingContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}/content/fill-the-blank": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update FillTheBlank content for an activity",
+        "description": "Replaces the entire fill-the-blank content for the specified activity.",
+        "operationId": "setFillTheBlankContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FillTheBlankContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/classrooms/{id}": {
+      "get": {
+        "tags": ["classroom-controller"],
+        "operationId": "getClassroomDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["classroom-controller"],
+        "operationId": "updateClassroom",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClassroomRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["classroom-controller"],
+        "operationId": "archiveClassroom",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/lessons": {
+      "post": {
+        "tags": ["Curriculum"],
+        "summary": "Create a new lesson with an optional thumbnail file",
+        "description": "Creates a new lesson. Uses multipart/form-data. One part named 'request' contains the JSON data. Another optional part named 'file' contains the thumbnail image.",
+        "operationId": "createLesson",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/CreateLessonRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Thumbnail file for the lesson (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lesson created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiLanguageLessonResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/grades": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get all active grade levels with pagination",
+        "description": "Returns a simplified paginated list of grade levels. Response contains only 'content' array and 'isLastPage' boolean. Parameters (page, size, sort) are not echoed back in response.",
+        "operationId": "getGradeLevels",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Language code (en, kk, ru)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (0-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort direction (asc or desc)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "asc"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSimplePaginatedResponseGradeLevelResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Curriculum"],
+        "summary": "Create a new grade level",
+        "description": "Creates a new grade level. Returns grade level info with all created language translations, with createdAt but without updatedAt timestamp.",
+        "operationId": "createGradeLevel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGradeLevelRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Grade level created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiLanguageGradeLevelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/chapters": {
+      "post": {
+        "tags": ["Curriculum"],
+        "summary": "Create a new chapter with an optional icon file",
+        "description": "Creates a new chapter. Uses multipart/form-data. One part named 'request' contains the JSON data. Another optional part named 'file' contains the icon image.",
+        "operationId": "createChapter",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/CreateChapterRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Icon file for the chapter (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Chapter created successfully",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiLanguageChapterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities": {
+      "post": {
+        "tags": ["Curriculum"],
+        "summary": "Create a new activity with an optional icon file",
+        "description": "Creates a new activity. Uses multipart/form-data. One part named 'request' contains the JSON data. Another optional part named 'file' contains the icon image.",
+        "operationId": "createActivity",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/CreateActivityRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Icon file for the activity (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/classrooms": {
+      "post": {
+        "tags": ["classroom-controller"],
+        "operationId": "createClassroom",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateClassroomRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/classrooms/{classroomCode}/join": {
+      "post": {
+        "tags": ["classroom-controller"],
+        "operationId": "joinClassroom",
+        "parameters": [
+          {
+            "name": "classroomCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/classrooms/{classId}/leave": {
+      "post": {
+        "tags": ["classroom-controller"],
+        "operationId": "leaveClassroom",
+        "parameters": [
+          {
+            "name": "classId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "refreshToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/guest": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "guestLogin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/guest/refresh": {
+      "post": {
+        "tags": ["auth-controller"],
+        "operationId": "refreshGuestToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuestTokenRefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/languages": {
+      "get": {
+        "tags": ["Languages"],
+        "summary": "Get all languages",
+        "operationId": "getLanguages",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListLanguageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activity-types": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get all activity types",
+        "operationId": "getActivityTypes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/classrooms/my": {
+      "get": {
+        "tags": ["classroom-controller"],
+        "operationId": "getMyClassrooms",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/hello": {
+      "get": {
+        "tags": ["test-controller"],
+        "operationId": "sayHello",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bye": {
+      "get": {
+        "tags": ["test-controller"],
+        "operationId": "sayBye",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/classrooms/{classId}/students/{studentId}": {
+      "delete": {
+        "tags": ["classroom-controller"],
+        "operationId": "removeStudentFromClassroom",
+        "parameters": [
+          {
+            "name": "classId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProfilePictureResponse": {
+        "type": "object",
+        "properties": {
+          "avatarUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "minLength": 1
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 8
+          }
+        },
+        "required": ["currentPassword", "newPassword"]
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+        }
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "experiencePoints": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "isNewUser": {
+            "type": "boolean"
+          },
+          "preferredLanguageCode": {
+            "type": "string"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LessonTranslationRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["title"]
+      },
+      "UpdateLessonRequest": {
+        "type": "object",
+        "description": "JSON data for the lesson update",
+        "properties": {
+          "lessonOrder": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "thumbnailBlurHash": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LessonTranslationRequest"
+            }
+          }
+        }
+      },
+      "ApiResponseObject": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {},
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "GradeLevelTranslationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["name"]
+      },
+      "UpdateGradeLevelRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GradeLevelTranslationRequest"
+            }
+          }
+        }
+      },
+      "ChapterTranslationRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["name", "title"]
+      },
+      "UpdateChapterRequest": {
+        "type": "object",
+        "description": "JSON data for the chapter update",
+        "properties": {
+          "chapterOrder": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "iconBlurHash": {
+            "type": "string"
+          },
+          "colorScheme": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ChapterTranslationRequest"
+            }
+          }
+        }
+      },
+      "ActivityTranslationRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["prompt", "title"]
+      },
+      "UpdateActivityRequest": {
+        "type": "object",
+        "description": "JSON data for the activity update",
+        "properties": {
+          "activityType": {
+            "type": "string"
+          },
+          "activityOrder": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "iconBlurHash": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "content": {},
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActivityTranslationRequest"
+            }
+          }
+        }
+      },
+      "ActivityResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lessonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activityType": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "iconBlurHash": {
+            "type": "string"
+          },
+          "activityOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "content": {},
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ApiResponseActivityResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ActivityResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "CategoryRequest": {
+        "type": "object",
+        "properties": {
+          "categoryOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TranslationRequest"
+            },
+            "minProperties": 1
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["categoryOrder", "items", "translations"]
+      },
+      "ItemRequest": {
+        "type": "object",
+        "properties": {
+          "itemOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "imageBlurHash": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ItemTranslationRequest"
+            }
+          }
+        },
+        "required": ["itemOrder"]
+      },
+      "ItemTranslationRequest": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "SortingContentRequest": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["categories"]
+      },
+      "TranslationRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["name"]
+      },
+      "AnswerOptionRequest": {
+        "type": "object",
+        "properties": {
+          "optionOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TranslationRequest"
+            },
+            "minProperties": 1
+          }
+        },
+        "required": ["isCorrect", "optionOrder", "translations"]
+      },
+      "QuestionRequest": {
+        "type": "object",
+        "properties": {
+          "questionOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TranslationRequest"
+            },
+            "minProperties": 1
+          },
+          "answerOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnswerOptionRequest"
+            },
+            "maxItems": 2147483647,
+            "minItems": 2
+          }
+        },
+        "required": ["answerOptions", "questionOrder", "translations"]
+      },
+      "QuizContentRequest": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["questions"]
+      },
+      "MemoryContentRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemoryItemRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["items"]
+      },
+      "MemoryItemRequest": {
+        "type": "object",
+        "properties": {
+          "itemOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasImage": {
+            "type": "boolean"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "imageBlurHash": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TranslationRequest"
+            },
+            "minProperties": 1
+          }
+        },
+        "required": ["hasImage", "itemOrder", "translations"]
+      },
+      "MatchingContentRequest": {
+        "type": "object",
+        "properties": {
+          "pairs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PairRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["pairs"]
+      },
+      "PairRequest": {
+        "type": "object",
+        "properties": {
+          "pairOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "item1ImageUrl": {
+            "type": "string"
+          },
+          "item1BlurHash": {
+            "type": "string"
+          },
+          "item2ImageUrl": {
+            "type": "string"
+          },
+          "item2BlurHash": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PairTranslationRequest"
+            },
+            "minProperties": 1
+          }
+        },
+        "required": ["pairOrder", "translations"]
+      },
+      "PairTranslationRequest": {
+        "type": "object",
+        "properties": {
+          "item1Text": {
+            "type": "string"
+          },
+          "item2Text": {
+            "type": "string"
+          }
+        }
+      },
+      "FillTheBlankContentRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["items"]
+      },
+      "UpdateClassroomRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[\\p{L}\\d\\s'.,-]+$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          }
+        },
+        "required": ["name"]
+      },
+      "ClassroomResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "gradeLevelCode": {
+            "type": "string"
+          },
+          "teachers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSummaryResponse"
+            }
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSummaryResponse"
+            }
+          }
+        }
+      },
+      "UserSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateLessonRequest": {
+        "type": "object",
+        "description": "JSON data for the lesson",
+        "properties": {
+          "chapterId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          },
+          "thumbnailBlurHash": {
+            "type": "string"
+          },
+          "lessonOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LessonTranslationRequest"
+            }
+          }
+        },
+        "required": ["chapterId", "lessonOrder", "translations"]
+      },
+      "LessonTranslationData": {
+        "type": "object",
+        "description": "Lesson translation data",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Translated lesson title",
+            "example": "Счет 1-5"
+          }
+        }
+      },
+      "MultiLanguageLessonResponse": {
+        "type": "object",
+        "description": "Lesson information with multiple language translations",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Lesson ID",
+            "example": 1
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Lesson thumbnail URL",
+            "example": "https://example.com/thumb.png"
+          },
+          "thumbnailBlurHash": {
+            "type": "string",
+            "description": "Lesson thumbnail blur hash for loading placeholder"
+          },
+          "lessonOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Lesson order within chapter",
+            "example": 1
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF9800"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LessonTranslationData"
+            },
+            "description": "Translations for different languages"
+          }
+        }
+      },
+      "CreateGradeLevelRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GradeLevelTranslationRequest"
+            }
+          }
+        },
+        "required": ["displayOrder", "name", "translations"]
+      },
+      "GradeLevelTranslationData": {
+        "type": "object",
+        "description": "Grade level translation data",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Translated grade level name",
+            "example": 1
+          }
+        }
+      },
+      "MultiLanguageGradeLevelResponse": {
+        "type": "object",
+        "description": "Grade level information with multiple language translations",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Grade level ID",
+            "example": 1
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Display order",
+            "example": 2
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Icon URL",
+            "example": "https://example.com/grade2.png"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF5733"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether grade level is active",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GradeLevelTranslationData"
+            },
+            "description": "Translations for different languages"
+          }
+        }
+      },
+      "CreateChapterRequest": {
+        "type": "object",
+        "description": "JSON data for the chapter",
+        "properties": {
+          "gradeLevelId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "iconBlurHash": {
+            "type": "string"
+          },
+          "chapterOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "colorScheme": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ChapterTranslationRequest"
+            }
+          }
+        },
+        "required": ["chapterOrder", "gradeLevelId", "translations"]
+      },
+      "ChapterTranslationData": {
+        "type": "object",
+        "description": "Chapter translation data",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Translated chapter title",
+            "example": "Глава 1"
+          },
+          "name": {
+            "type": "string",
+            "description": "Translated chapter name",
+            "example": "Числа 1-10"
+          }
+        }
+      },
+      "MultiLanguageChapterResponse": {
+        "type": "object",
+        "description": "Chapter information with multiple language translations",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "gradeLevelId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Grade level ID",
+            "example": 1
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Chapter icon URL",
+            "example": "https://example.com/icon.png"
+          },
+          "iconBlurHash": {
+            "type": "string",
+            "description": "Chapter icon blur hash for loading placeholder"
+          },
+          "chapterOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Chapter order within grade level",
+            "example": 1
+          },
+          "colorScheme": {
+            "type": "string",
+            "description": "Color scheme",
+            "example": "blue"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ChapterTranslationData"
+            },
+            "description": "Translations for different languages"
+          }
+        }
+      },
+      "CreateActivityRequest": {
+        "type": "object",
+        "description": "JSON data for the activity",
+        "properties": {
+          "lessonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activityType": {
+            "type": "string",
+            "minLength": 1
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "iconBlurHash": {
+            "type": "string"
+          },
+          "activityOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "backgroundColor": {
+            "type": "string"
+          },
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActivityTranslationRequest"
+            }
+          }
+        },
+        "required": [
+          "activityOrder",
+          "activityType",
+          "lessonId",
+          "translations"
+        ]
+      },
+      "CreateClassroomRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[\\p{L}\\d\\s'.,-]+$"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "gradeLevelCode": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["gradeLevelCode", "name"]
+      },
+      "ClassroomSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "gradeLevelCode": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 2147483647,
+            "minLength": 8
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": ["email", "password", "role"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "GuestTokenRefreshRequest": {
+        "type": "object",
+        "properties": {
+          "expiredToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["expiredToken"]
+      },
+      "ApiResponseListLanguageResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LanguageResponse"
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "LanguageResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "LessonWithActivitiesResponse": {
+        "type": "object",
+        "description": "Lesson information with activities",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Lesson ID",
+            "example": 1
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Lesson thumbnail URL",
+            "example": "https://example.com/thumb.png"
+          },
+          "thumbnailBlurHash": {
+            "type": "string",
+            "description": "Lesson thumbnail blur hash for loading placeholder"
+          },
+          "lessonOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Lesson order within chapter",
+            "example": 1
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF9800"
+          },
+          "title": {
+            "type": "string",
+            "description": "Translated lesson title",
+            "example": "Счет 1-5"
+          },
+          "activities": {
+            "type": "array",
+            "description": "Activities in this lesson",
+            "items": {
+              "$ref": "#/components/schemas/ActivityResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "ApiResponseSimplePaginatedResponseGradeLevelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SimplePaginatedResponseGradeLevelResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "GradeLevelResponse": {
+        "type": "object",
+        "description": "Grade level basic information",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Grade level ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Translated grade level name",
+            "example": 2
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Display order",
+            "example": 2
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Icon URL",
+            "example": "https://example.com/grade2.png"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF5733"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether grade level is active",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "SimplePaginatedResponseGradeLevelResponse": {
+        "type": "object",
+        "description": "Simplified paginated response",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "List of items for current page",
+            "items": {
+              "$ref": "#/components/schemas/GradeLevelResponse"
+            }
+          },
+          "isLastPage": {
+            "type": "boolean",
+            "description": "Whether this is the last page",
+            "example": false
+          }
+        }
+      },
+      "ChapterResponse": {
+        "type": "object",
+        "description": "Chapter information",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "gradeLevelId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Grade level ID",
+            "example": 1
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Chapter icon URL",
+            "example": "https://example.com/icon.png"
+          },
+          "iconBlurHash": {
+            "type": "string",
+            "description": "Chapter icon blur hash for loading placeholder"
+          },
+          "chapterOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Chapter order within grade level",
+            "example": 1
+          },
+          "colorScheme": {
+            "type": "string",
+            "description": "Color scheme",
+            "example": "blue"
+          },
+          "title": {
+            "type": "string",
+            "description": "Translated chapter title",
+            "example": "Глава 1"
+          },
+          "name": {
+            "type": "string",
+            "description": "Translated chapter name",
+            "example": "Числа 1-10"
+          },
+          "lessons": {
+            "type": "array",
+            "description": "Lessons in this chapter (only in detailed view)",
+            "items": {
+              "$ref": "#/components/schemas/LessonResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp (not returned on create)"
+          },
+          "isLastPage": {
+            "type": "boolean",
+            "description": "Whether this is the last page of lessons (only in detailed view)",
+            "example": true
+          }
+        }
+      },
+      "GradeLevelDetailSwaggerResponse": {
+        "type": "object",
+        "description": "Detailed grade level information with chapters",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Grade level ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Translated grade level name",
+            "example": 2
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Display order",
+            "example": 2
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Icon URL",
+            "example": "https://example.com/grade2.png"
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF5733"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether grade level is active",
+            "example": true
+          },
+          "chapters": {
+            "type": "array",
+            "description": "Chapters in this grade level (without lessons)",
+            "items": {
+              "$ref": "#/components/schemas/ChapterResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "isLastPage": {
+            "type": "boolean",
+            "description": "Whether this is the last page of chapters",
+            "example": true
+          }
+        }
+      },
+      "LessonResponse": {
+        "type": "object",
+        "description": "Lesson information",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Lesson ID",
+            "example": 1
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Lesson thumbnail URL",
+            "example": "https://example.com/thumb.png"
+          },
+          "thumbnailBlurHash": {
+            "type": "string",
+            "description": "Lesson thumbnail blur hash for loading placeholder"
+          },
+          "lessonOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Lesson order within chapter",
+            "example": 1
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF9800"
+          },
+          "title": {
+            "type": "string",
+            "description": "Translated lesson title",
+            "example": "Счет 1-5"
+          },
+          "activities": {
+            "type": "array",
+            "description": "Activities in this lesson (only in detailed view)",
+            "items": {
+              "$ref": "#/components/schemas/ActivityResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp (not returned on create)"
+          },
+          "isLastPage": {
+            "type": "boolean",
+            "description": "Whether this is the last page of activities (only in detailed view)",
+            "example": true
+          }
+        }
+      },
+      "ChapterWithLessonsResponse": {
+        "type": "object",
+        "description": "Chapter information with lessons",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "gradeLevelId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Grade level ID",
+            "example": 1
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Chapter icon URL",
+            "example": "https://example.com/icon.png"
+          },
+          "iconBlurHash": {
+            "type": "string",
+            "description": "Chapter icon blur hash for loading placeholder"
+          },
+          "chapterOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Chapter order within grade level",
+            "example": 1
+          },
+          "colorScheme": {
+            "type": "string",
+            "description": "Color scheme",
+            "example": "blue"
+          },
+          "title": {
+            "type": "string",
+            "description": "Translated chapter title",
+            "example": "Глава 1"
+          },
+          "name": {
+            "type": "string",
+            "description": "Translated chapter name",
+            "example": "Числа 1-10"
+          },
+          "lessons": {
+            "type": "array",
+            "description": "Lessons in this chapter",
+            "items": {
+              "$ref": "#/components/schemas/LessonWithoutActivitiesResponse"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "isLastPage": {
+            "type": "boolean",
+            "description": "Whether this is the last page of lessons (only when pagination is used)",
+            "example": true
+          }
+        }
+      },
+      "LessonWithoutActivitiesResponse": {
+        "type": "object",
+        "description": "Lesson information without activities",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Lesson ID",
+            "example": 1
+          },
+          "chapterId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Chapter ID",
+            "example": 1
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "description": "Lesson thumbnail URL",
+            "example": "https://example.com/thumb.png"
+          },
+          "thumbnailBlurHash": {
+            "type": "string",
+            "description": "Lesson thumbnail blur hash for loading placeholder"
+          },
+          "lessonOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Lesson order within chapter",
+            "example": 1
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#FF9800"
+          },
+          "title": {
+            "type": "string",
+            "description": "Translated lesson title",
+            "example": "Счет 1-5"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "ApiResponseListString": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ActivityWithContentResponse": {
+        "type": "object",
+        "description": "Activity information with content",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Activity ID",
+            "example": 1
+          },
+          "lessonId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Lesson ID",
+            "example": 1
+          },
+          "activityType": {
+            "type": "string",
+            "description": "Activity type",
+            "example": "Quiz"
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "Activity icon URL",
+            "example": "https://example.com/icon.png"
+          },
+          "iconBlurHash": {
+            "type": "string",
+            "description": "Activity icon blur hash for loading placeholder"
+          },
+          "activityOrder": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Activity order within lesson",
+            "example": 1
+          },
+          "backgroundColor": {
+            "type": "string",
+            "description": "Background color in hex",
+            "example": "#4CAF50"
+          },
+          "title": {
+            "type": "string",
+            "description": "Translated activity title",
+            "example": "Выберите правильный ответ"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "Translated activity prompt",
+            "example": "Сколько будет 2 + 2?"
+          },
+          "content": {
+            "description": "Dynamic content based on activity type",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MemoryGameContentResponse"
+              },
+              {
+                "$ref": "#/components/schemas/QuizContentResponse"
+              },
+              {
+                "$ref": "#/components/schemas/SortingContentResponse"
+              },
+              {
+                "$ref": "#/components/schemas/MatchingContentResponse"
+              },
+              {
+                "$ref": "#/components/schemas/FillTheBlankContentResponse"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sentenceTemplate": {
+            "type": "string"
+          },
+          "correctAnswer": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "MemoryGameContentResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "AnswerOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "answerText": {
+            "type": "string"
+          },
+          "correct": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "questionText": {
+            "type": "string"
+          },
+          "answerOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnswerOption"
+            }
+          }
+        }
+      },
+      "QuizContentResponse": {
+        "type": "object",
+        "properties": {
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "SortingContentResponse": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            }
+          }
+        }
+      },
+      "MatchingContentResponse": {
+        "type": "object",
+        "properties": {
+          "pairs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Pair"
+            }
+          }
+        }
+      },
+      "Pair": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item1Text": {
+            "type": "string"
+          },
+          "item1ImageUrl": {
+            "type": "string"
+          },
+          "item1BlurHash": {
+            "type": "string"
+          },
+          "item2Text": {
+            "type": "string"
+          },
+          "item2ImageUrl": {
+            "type": "string"
+          },
+          "item2BlurHash": {
+            "type": "string"
+          }
+        }
+      },
+      "FillTheBlankContentResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PageClassroomSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassroomSummaryResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageableObject": {
+        "type": "object",
+        "properties": {
+          "unpaged": {
+            "type": "boolean"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          }
+        }
+      },
+      "SortObject": {
+        "type": "object",
+        "properties": {
+          "unsorted": {
+            "type": "boolean"
+          },
+          "sorted": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseVoid": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {},
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
