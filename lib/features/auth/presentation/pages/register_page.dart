@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/widgets/widgets.dart';
-import '../../../../core/localization/localization_extension.dart';
+import '../../../../core/repositories/repositories.dart';
 
 class RegisterPage extends StatefulWidget {
   static const String route = '/register';
@@ -19,12 +19,14 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final ApiRepository _apiRepository = ApiRepository();
 
-  // Add state variables for validation
+  // Add state variables for validation and loading
   String? _emailError;
   String? _passwordError;
   String? _firstNameError;
   String? _lastNameError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -42,12 +44,13 @@ class _RegisterPageState extends State<RegisterPage> {
     // Validate email
     if (_emailController.text.isEmpty) {
       setState(() {
-        _emailError = context.l10n.pleaseEnterEmail;
+        _emailError = "Email is required";
       });
       isValid = false;
-    } else if (!_emailController.text.contains('@')) {
+    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+        .hasMatch(_emailController.text)) {
       setState(() {
-        _emailError = context.l10n.pleaseEnterValidEmail;
+        _emailError = "Please enter a valid email";
       });
       isValid = false;
     } else {
@@ -59,12 +62,12 @@ class _RegisterPageState extends State<RegisterPage> {
     // Validate password
     if (_passwordController.text.isEmpty) {
       setState(() {
-        _passwordError = context.l10n.pleaseEnterPassword;
+        _passwordError = "Password is required";
       });
       isValid = false;
     } else if (_passwordController.text.length < 6) {
       setState(() {
-        _passwordError = context.l10n.passwordMinLength;
+        _passwordError = "Password must be at least 6 characters";
       });
       isValid = false;
     } else {
@@ -76,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
     // Validate first name
     if (_firstNameController.text.isEmpty) {
       setState(() {
-        _firstNameError = context.l10n.pleaseEnterFirstName;
+        _firstNameError = "First name is required";
       });
       isValid = false;
     } else {
@@ -88,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
     // Validate last name
     if (_lastNameController.text.isEmpty) {
       setState(() {
-        _lastNameError = context.l10n.pleaseEnterLastName;
+        _lastNameError = "Last name is required";
       });
       isValid = false;
     } else {
@@ -114,7 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    context.l10n.signUp,
+                    "Sign Up",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24.sp,
@@ -136,59 +139,51 @@ class _RegisterPageState extends State<RegisterPage> {
                       children: [
                         // Email field
                         CustomInputField(
-                          label: context.l10n.email,
-                          hintText: context.l10n.email,
+                          label: "Email",
+                          hintText: "Enter your email",
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          errorMessage:
-                              _emailError, // Pass error message directly
+                          errorMessage: _emailError,
                         ),
 
                         SizedBox(height: 20.h),
 
                         // Password field
                         CustomInputField(
-                          label: context.l10n.password,
-                          hintText: context.l10n.password,
+                          label: "Password",
+                          hintText: "Enter your password",
                           controller: _passwordController,
                           obscureText: true,
-                          errorMessage:
-                              _passwordError, // Pass error message directly
+                          errorMessage: _passwordError,
                         ),
 
                         SizedBox(height: 20.h),
 
                         // First name field
                         CustomInputField(
-                          label: context.l10n.firstName,
-                          hintText: context.l10n.firstName,
+                          label: "First Name",
+                          hintText: "Enter your first name",
                           controller: _firstNameController,
-                          errorMessage:
-                              _firstNameError, // Pass error message directly
+                          errorMessage: _firstNameError,
                         ),
 
                         SizedBox(height: 20.h),
 
                         // Last name field
                         CustomInputField(
-                          label: context.l10n.lastName,
-                          hintText: context.l10n.lastName,
+                          label: "Last Name",
+                          hintText: "Enter your last name",
                           controller: _lastNameController,
-                          errorMessage:
-                              _lastNameError, // Pass error message directly
+                          errorMessage: _lastNameError,
                         ),
 
                         SizedBox(height: 40.h),
 
                         // Sign up button
                         PrimaryButton(
-                          text: context.l10n.signUp,
-                          onPressed: () {
-                            if (_validateForm()) {
-                              // Handle registration
-                              context.go('/home');
-                            }
-                          },
+                          text: "Sign Up",
+                          onPressed: _isLoading ? null : _handleRegister,
+                          isLoading: _isLoading,
                         ),
 
                         SizedBox(height: 40.h),
@@ -201,10 +196,12 @@ class _RegisterPageState extends State<RegisterPage> {
               // Back button at the bottom
               Center(
                 child: CustomTextButton(
-                  text: context.l10n.back,
-                  onPressed: () {
-                    context.pop();
-                  },
+                  text: "Back",
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          context.pop();
+                        },
                 ),
               ),
 
@@ -214,5 +211,53 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleRegister() async {
+    if (!_validateForm()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await _apiRepository.register(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        role: 'STUDENT', // Default role for registration
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
+
+      if (mounted) {
+        if (result.success) {
+          // Registration successful, navigate to home (token is saved automatically in ApiRepository)
+          context.go('/home');
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message ?? 'Registration failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorOccurred(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }

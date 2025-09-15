@@ -12,22 +12,222 @@
   ],
   "tags": [
     {
+      "name": "Admin: Superuser School Management",
+      "description": "Endpoints for Super Administrators (SAVETUBA_ADMIN) to manage all schools."
+    },
+    {
       "name": "Curriculum",
       "description": "Curriculum management endpoints"
     },
     {
+      "name": "Classrooms",
+      "description": "Endpoints for creating, joining, and managing classrooms."
+    },
+    {
+      "name": "Leaderboard",
+      "description": "Student leaderboard endpoints"
+    },
+    {
+      "name": "Admin: School Management",
+      "description": "Endpoints for School Administrators to manage their own school."
+    },
+    {
+      "name": "User Profile",
+      "description": "Endpoints for managing the current user's profile."
+    },
+    {
+      "name": "Badges",
+      "description": "Endpoints for viewing user badges and progress."
+    },
+    {
+      "name": "Assignments",
+      "description": "Assignment management endpoints"
+    },
+    {
       "name": "Languages",
       "description": "Language management endpoints"
+    },
+    {
+      "name": "Authentication",
+      "description": "Endpoints for user registration, login, logout, and token management."
     }
   ],
   "paths": {
-    "/api/v1/profile/picture": {
+    "/api/v1/schools/{id}": {
+      "get": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Get a school by ID",
+        "description": "Retrieves the details of a specific school by its unique ID.",
+        "operationId": "getSchoolById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved school details.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
       "put": {
-        "tags": ["profile-controller"],
-        "operationId": "updateProfilePicture",
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Update a school",
+        "description": "Updates a school's details, such as name, address, or active status.",
+        "operationId": "updateSchool",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSchoolRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "School updated successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict if the new school name already exists.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Delete a school",
+        "description": "Permanently deletes a school. This operation will fail if the school has any associated users.",
+        "operationId": "deleteSchool",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "School deleted successfully."
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN."
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist."
+          },
+          "409": {
+            "description": "Conflict if the school cannot be deleted due to associated users."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/profile/picture": {
+      "put": {
+        "tags": ["User Profile"],
+        "summary": "Update profile picture",
+        "description": "Uploads a new profile picture for the current user. Accepts multipart/form-data. The old picture, if it exists, will be deleted. Returns a short-lived presigned URL to the new avatar.",
+        "operationId": "updateProfilePicture",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
@@ -43,7 +243,17 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Profile picture updated successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfilePictureResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if the file is invalid (e.g., wrong format, too large).",
             "content": {
               "*/*": {
                 "schema": {
@@ -52,12 +262,19 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/profile/password": {
       "put": {
-        "tags": ["profile-controller"],
+        "tags": ["User Profile"],
+        "summary": "Change password",
+        "description": "Changes the password for the currently authenticated user. All active sessions (refresh tokens) will be invalidated.",
         "operationId": "changePassword",
         "requestBody": {
           "content": {
@@ -70,19 +287,29 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "Password changed successfully."
+          },
+          "400": {
+            "description": "Bad Request if the current password is incorrect or the new password is the same as the old one."
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/profile/me": {
       "get": {
-        "tags": ["profile-controller"],
+        "tags": ["User Profile"],
+        "summary": "Get my profile",
+        "description": "Retrieves the profile information for the currently authenticated user.",
         "operationId": "getMyProfile",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Successfully retrieved profile data.",
             "content": {
               "*/*": {
                 "schema": {
@@ -91,10 +318,17 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "put": {
-        "tags": ["profile-controller"],
+        "tags": ["User Profile"],
+        "summary": "Update my profile",
+        "description": "Updates the first name and last name of the currently authenticated user.",
         "operationId": "updateMyProfile",
         "requestBody": {
           "content": {
@@ -108,7 +342,17 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Profile updated successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if validation on name fields fails.",
             "content": {
               "*/*": {
                 "schema": {
@@ -117,7 +361,44 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["User Profile"],
+        "summary": "Delete my account",
+        "description": "Permanently anonymizes and deactivates the current user's account. This action is irreversible and requires password confirmation.",
+        "operationId": "deleteAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Account deleted successfully."
+          },
+          "400": {
+            "description": "Bad Request if the provided password is incorrect."
+          },
+          "403": {
+            "description": "Forbidden for certain roles like SAVETUBA_ADMIN or School Admins who still manage a school."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/curriculum/lessons/{lessonId}": {
@@ -659,10 +940,61 @@
         }
       }
     },
+    "/api/v1/curriculum/activities/{activityId}/content/submission-based": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update content for submission-based activities",
+        "description": "Updates the content (title, prompt, and image) for Snapshot, Image Boom, or Mastery activities. Uses multipart/form-data.",
+        "operationId": "setSubmissionBasedContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "$ref": "#/components/schemas/SubmissionBasedContentRequest"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "New image file for the activity (optional)"
+                  }
+                },
+                "required": ["request"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/curriculum/activities/{activityId}/content/sorting": {
       "put": {
         "tags": ["Curriculum"],
-        "summary": "Set/Update Sorting/Reorder content for an activity",
+        "summary": "Set/Update Sorting content for an activity",
         "description": "Replaces the entire sorting content for the specified activity.",
         "operationId": "setSortingContent",
         "parameters": [
@@ -681,6 +1013,47 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SortingContentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/curriculum/activities/{activityId}/content/reorder": {
+      "put": {
+        "tags": ["Curriculum"],
+        "summary": "Set/Update Reorder content for an activity",
+        "description": "Replaces the entire reorder content for the specified activity.",
+        "operationId": "setReorderContent",
+        "parameters": [
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderContentRequest"
               }
             }
           },
@@ -782,91 +1155,11 @@
         }
       }
     },
-    "/api/v1/curriculum/activities/{activityId}/content/matching": {
-      "put": {
-        "tags": ["Curriculum"],
-        "summary": "Set/Update Matching content for an activity",
-        "description": "Replaces the entire matching content for the specified activity.",
-        "operationId": "setMatchingContent",
-        "parameters": [
-          {
-            "name": "activityId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MatchingContentRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/curriculum/activities/{activityId}/content/fill-the-blank": {
-      "put": {
-        "tags": ["Curriculum"],
-        "summary": "Set/Update FillTheBlank content for an activity",
-        "description": "Replaces the entire fill-the-blank content for the specified activity.",
-        "operationId": "setFillTheBlankContent",
-        "parameters": [
-          {
-            "name": "activityId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FillTheBlankContentRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiResponseActivityResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/classrooms/{id}": {
       "get": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Get classroom details by ID",
+        "description": "Retrieves detailed information about a specific classroom, including lists of teachers and students. The current user must be a member of the classroom.",
         "operationId": "getClassroomDetails",
         "parameters": [
           {
@@ -881,7 +1174,27 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Successfully retrieved classroom details.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a member of the classroom.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the classroom ID does not exist.",
             "content": {
               "*/*": {
                 "schema": {
@@ -890,10 +1203,17 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "put": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Update classroom details",
+        "description": "Allows a TEACHER who is a member of the classroom to update its name and description.",
         "operationId": "updateClassroom",
         "parameters": [
           {
@@ -918,7 +1238,27 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Classroom updated successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a teacher in this classroom.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the classroom ID does not exist.",
             "content": {
               "*/*": {
                 "schema": {
@@ -927,10 +1267,17 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       },
       "delete": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Archive a classroom",
+        "description": "Allows a TEACHER to archive their classroom. The classroom will no longer be active or visible to students.",
         "operationId": "archiveClassroom",
         "parameters": [
           {
@@ -944,10 +1291,379 @@
           }
         ],
         "responses": {
+          "204": {
+            "description": "Classroom archived successfully."
+          },
+          "403": {
+            "description": "Forbidden if the user is not a teacher in this classroom."
+          },
+          "404": {
+            "description": "Not Found if the classroom ID does not exist."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assignments/{assignmentId}": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get assignment details",
+        "description": "Get detailed information about an assignment",
+        "operationId": "getAssignment",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAssignmentResponse"
+                }
+              }
+            }
           }
         }
+      },
+      "put": {
+        "tags": ["Assignments"],
+        "summary": "Update an assignment",
+        "description": "Teacher updates an existing assignment",
+        "operationId": "updateAssignment",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAssignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Assignments"],
+        "summary": "Delete an assignment",
+        "description": "Teacher archives an assignment",
+        "operationId": "deleteAssignment",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/schools": {
+      "get": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Get all schools",
+        "description": "Retrieves a paginated list of all schools in the system.",
+        "operationId": "getAllSchools",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the list of schools.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageSchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageSchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Create a new school",
+        "description": "Creates a new school in the system.",
+        "operationId": "createSchool",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSchoolRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "School created successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if validation fails.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict if a school with the same name already exists.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/schools/{schoolId}/admin/{userId}": {
+      "post": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Assign a user as a School Administrator",
+        "description": "Assigns an existing user with the 'ADMIN' role to be the administrator of a specific school.",
+        "operationId": "assignAdmin",
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Admin assigned successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if the user does not have the ADMIN role.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school or user ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict if the school already has an admin or the user is already an admin of another school.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/schools/{schoolId}/admin-invite": {
+      "post": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Create an invitation for a School Administrator",
+        "description": "Generates a single-use invitation link for a new user to register as an administrator for a specific school.",
+        "operationId": "createAdminInvite",
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation created successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict if the school already has an administrator.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/curriculum/lessons": {
@@ -1122,6 +1838,42 @@
         }
       }
     },
+    "/api/v1/curriculum/assets": {
+      "post": {
+        "tags": ["Curriculum"],
+        "summary": "Upload a media asset for content",
+        "description": "Uploads a single image or audio file and returns its identifier (object name) to be used in content creation.",
+        "operationId": "uploadAsset",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAssetUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/curriculum/activities": {
       "post": {
         "tags": ["Curriculum"],
@@ -1164,7 +1916,9 @@
     },
     "/api/v1/classrooms": {
       "post": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Create a new classroom",
+        "description": "Allows a TEACHER to create a new classroom. The classroom is automatically associated with the teacher's school.",
         "operationId": "createClassroom",
         "requestBody": {
           "content": {
@@ -1177,8 +1931,28 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "Classroom created successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if validation fails or grade level is not found.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a TEACHER.",
             "content": {
               "*/*": {
                 "schema": {
@@ -1187,12 +1961,94 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/classrooms/{classroomId}/transfer/{newTeacherId}": {
+      "post": {
+        "tags": ["Classrooms"],
+        "summary": "Transfer classroom ownership",
+        "description": "Allows a TEACHER to transfer ownership of their classroom to another teacher within the same school.",
+        "operationId": "transferClassroomOwnership",
+        "parameters": [
+          {
+            "name": "classroomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "newTeacherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Classroom transferred successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if the new teacher is invalid (not a teacher, not in the same school).",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the current user is not the owner of the classroom.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the classroom or new teacher does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/classrooms/{classroomCode}/join": {
       "post": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Join a classroom with a code",
+        "description": "Allows a STUDENT to join an existing, active classroom using its unique code.",
         "operationId": "joinClassroom",
         "parameters": [
           {
@@ -1206,7 +2062,37 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Successfully joined the classroom.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a STUDENT.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if no active classroom matches the provided code.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict if the student is already a member of the classroom.",
             "content": {
               "*/*": {
                 "schema": {
@@ -1215,12 +2101,19 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/classrooms/{classId}/leave": {
       "post": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Leave a classroom",
+        "description": "Allows a STUDENT to leave a classroom they have joined.",
         "operationId": "leaveClassroom",
         "parameters": [
           {
@@ -1234,16 +2127,40 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "Successfully left the classroom."
+          },
+          "403": {
+            "description": "Forbidden if the user is not a STUDENT."
+          },
+          "404": {
+            "description": "Not Found if the student is not enrolled in the specified classroom."
           }
-        }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/v1/auth/register": {
       "post": {
-        "tags": ["auth-controller"],
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Registers a new user. Public registration defaults to the 'STUDENT' role. If a valid 'inviteToken' is provided, the user is assigned a role and school based on the invitation.",
         "operationId": "register",
+        "parameters": [
+          {
+            "name": "inviteToken",
+            "in": "query",
+            "description": "An optional invitation token for registering with a specific role (e.g., TEACHER or ADMIN).",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -1256,7 +2173,37 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "User registered successfully. Returns an access token and sets a refresh token in an httpOnly cookie.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if validation fails.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the inviteToken is invalid or expired.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict if a user with the provided email already exists.",
             "content": {
               "*/*": {
                 "schema": {
@@ -1270,11 +2217,75 @@
     },
     "/api/v1/auth/refresh": {
       "post": {
-        "tags": ["auth-controller"],
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "description": "Uses the httpOnly 'refreshToken' cookie to generate a new access token and a new refresh token (token rotation).",
         "operationId": "refreshToken",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Access token refreshed successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if the refresh token is missing, invalid, or expired.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/oauth2/{provider}": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Log in or register with an OAuth2 provider",
+        "description": "Handles authentication using an OAuth2 provider like Google. If the user does not exist, a new user with the 'STUDENT' role is created.",
+        "operationId": "oauth2Login",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "description": "The name of the OAuth2 provider (e.g., 'google').",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "google"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuth2LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OAuth2 login successful.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if the provider is unsupported or the token is invalid.",
             "content": {
               "*/*": {
                 "schema": {
@@ -1288,18 +2299,22 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "tags": ["auth-controller"],
+        "tags": ["Authentication"],
+        "summary": "Log out a user",
+        "description": "Invalidates the current session's refresh token from the server and clears the httpOnly cookie.",
         "operationId": "logout",
         "responses": {
-          "200": {
-            "description": "OK"
+          "204": {
+            "description": "User logged out successfully."
           }
         }
       }
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": ["auth-controller"],
+        "tags": ["Authentication"],
+        "summary": "Log in a user",
+        "description": "Authenticates a user with email and password. On success, returns an access token and sets a refresh token in an httpOnly cookie.",
         "operationId": "login",
         "requestBody": {
           "content": {
@@ -1313,7 +2328,17 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Login successful.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized if credentials are invalid.",
             "content": {
               "*/*": {
                 "schema": {
@@ -1327,11 +2352,13 @@
     },
     "/api/v1/auth/guest": {
       "post": {
-        "tags": ["auth-controller"],
+        "tags": ["Authentication"],
+        "summary": "Get a guest access token",
+        "description": "Generates a short-lived access token for an anonymous guest user.",
         "operationId": "guestLogin",
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Guest token generated successfully.",
             "content": {
               "*/*": {
                 "schema": {
@@ -1345,7 +2372,9 @@
     },
     "/api/v1/auth/guest/refresh": {
       "post": {
-        "tags": ["auth-controller"],
+        "tags": ["Authentication"],
+        "summary": "Refresh a guest access token",
+        "description": "Refreshes an expired guest token to get a new one. The provided token must be an expired guest token.",
         "operationId": "refreshGuestToken",
         "requestBody": {
           "content": {
@@ -1359,11 +2388,591 @@
         },
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Guest token refreshed successfully.",
             "content": {
               "*/*": {
                 "schema": {
                   "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if the token is not a valid, expired guest token.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments": {
+      "post": {
+        "tags": ["Assignments"],
+        "summary": "Create a new assignment",
+        "description": "Teacher creates an assignment for a classroom",
+        "operationId": "createAssignment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAssignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/submit-answer": {
+      "post": {
+        "tags": ["Assignments"],
+        "summary": "Submit answer for activity",
+        "description": "Student submits answer for a specific activity within an assignment.",
+        "operationId": "submitAnswer",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitActivityAnswerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubmitAnswerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/review-submission": {
+      "post": {
+        "tags": ["Assignments"],
+        "summary": "Review submission",
+        "description": "Teacher reviews a submission (approve/reject/reset)",
+        "operationId": "reviewSubmission",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionReviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/my-school/teacher-invite": {
+      "post": {
+        "tags": ["Admin: School Management"],
+        "summary": "Create a teacher invitation link",
+        "description": "Generates a single-use invitation link for a new teacher to register and automatically join the admin's school.",
+        "operationId": "createTeacherInvite",
+        "responses": {
+          "200": {
+            "description": "Successfully created the invitation link.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a School Administrator.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/classrooms/{classroomId}/assign-teacher/{teacherId}": {
+      "post": {
+        "tags": ["Admin: School Management"],
+        "summary": "Assign a teacher to a classroom",
+        "description": "Assigns a teacher to a classroom within the admin's school. The classroom must not have a teacher currently assigned.",
+        "operationId": "assignTeacher",
+        "parameters": [
+          {
+            "name": "classroomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "teacherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teacher assigned successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request if the classroom already has a teacher or the user is not a valid teacher for this school.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if classroom or teacher ID is incorrect.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/schools/{schoolId}/teachers": {
+      "get": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Get all teachers in a school",
+        "description": "Retrieves a paginated list of all teachers for a specific school by its ID.",
+        "operationId": "getSchoolTeachers",
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the list of teachers.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/schools/{schoolId}/classrooms": {
+      "get": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Get all classrooms in a school",
+        "description": "Retrieves a paginated list of all active classrooms for a specific school by its ID.",
+        "operationId": "getSchoolClassrooms",
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the list of classrooms.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/schools/{schoolId}/admin": {
+      "get": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Get the administrator of a school",
+        "description": "Retrieves the details of the School Administrator for a specific school by its ID.",
+        "operationId": "getSchoolAdmin",
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the school administrator.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID or its administrator does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Admin: Superuser School Management"],
+        "summary": "Unassign an administrator from a school",
+        "description": "Removes the administrator role from the user currently managing the school.",
+        "operationId": "unassignAdmin",
+        "parameters": [
+          {
+            "name": "schoolId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Admin unassigned successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a SAVETUBA_ADMIN.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the school ID does not exist.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/leaderboard/global": {
+      "get": {
+        "tags": ["Leaderboard"],
+        "summary": "Get global leaderboard",
+        "description": "Returns top students across all classrooms",
+        "operationId": "getGlobalLeaderboard",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (0-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLeaderboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leaderboard/classroom/{classroomId}": {
+      "get": {
+        "tags": ["Leaderboard"],
+        "summary": "Get classroom leaderboard",
+        "description": "Returns ranked list of students in a classroom by experience points",
+        "operationId": "getClassroomLeaderboard",
+        "parameters": [
+          {
+            "name": "classroomId",
+            "in": "path",
+            "description": "Classroom ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (0-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "topN",
+            "in": "query",
+            "description": "Include only top N students (optional)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLeaderboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/leaderboard/classroom/{classroomId}/student/{studentId}": {
+      "get": {
+        "tags": ["Leaderboard"],
+        "summary": "Get student position in classroom",
+        "description": "Returns specific student's position in classroom leaderboard",
+        "operationId": "getStudentPosition",
+        "parameters": [
+          {
+            "name": "classroomId",
+            "in": "path",
+            "description": "Classroom ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "studentId",
+            "in": "path",
+            "description": "Student ID",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseStudentEntry"
                 }
               }
             }
@@ -1390,6 +2999,38 @@
         }
       }
     },
+    "/api/v1/curriculum/grades/available": {
+      "get": {
+        "tags": ["Curriculum"],
+        "summary": "Get available grade levels for student",
+        "description": "Returns grade levels that have active assignments for student",
+        "operationId": "getAvailableGrades",
+        "parameters": [
+          {
+            "name": "language",
+            "in": "query",
+            "description": "Language code (en, kk, ru)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListGradeLevelResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/curriculum/activity-types": {
       "get": {
         "tags": ["Curriculum"],
@@ -1409,10 +3050,407 @@
         }
       }
     },
-    "/api/v1/classrooms/my": {
+    "/api/v1/classrooms/my-classrooms": {
       "get": {
-        "tags": ["classroom-controller"],
-        "operationId": "getMyClassrooms",
+        "tags": ["Classrooms"],
+        "summary": "Get my classrooms (for Teachers)",
+        "description": "Retrieves a paginated list of classrooms for the currently authenticated TEACHER.",
+        "operationId": "getMyClassroomsForTeacher",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved classrooms.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a TEACHER.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/classrooms/my-classroom": {
+      "get": {
+        "tags": ["Classrooms"],
+        "summary": "Get my classroom (for Students)",
+        "description": "Retrieves the single classroom for the currently authenticated STUDENT.",
+        "operationId": "getMyClassroomForStudent",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the classroom.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a STUDENT.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the student is not enrolled in any classroom.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/badges/my": {
+      "get": {
+        "tags": ["Badges"],
+        "summary": "Get my badges and progress",
+        "description": "Retrieves a list of all badges for the currently authenticated STUDENT. The list is split into two parts: unlocked badges (already earned) and locked badges (not yet earned), including the student's current progress towards them.",
+        "operationId": "getMyBadges",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved badge information.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBadgeProgressResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a STUDENT.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserBadgeProgressResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/submissions": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get submissions for review",
+        "description": "Teacher gets submission-based answers for review",
+        "operationId": "getSubmissionsForReview",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageSubmissionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/submissions/{answerId}": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get submission details",
+        "description": "Teacher gets detailed submission information",
+        "operationId": "getSubmissionDetails",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "answerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSubmissionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/student/{studentId}/activity/{activityId}/answers": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get student's answer history for an activity",
+        "description": "Teacher gets a specific student's answer history for an activity in an assignment",
+        "operationId": "getStudentAnswerHistoryForActivity",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListStudentAnswerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/statistics": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get assignment statistics",
+        "description": "Teacher gets statistics for an assignment",
+        "operationId": "getAssignmentStatistics",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAssignmentStatisticsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/progress": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get assignment progress for all students",
+        "description": "Teacher gets progress overview for an assignment",
+        "operationId": "getAssignmentProgress",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAssignmentProgressResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/is-expired": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Check if assignment is expired",
+        "description": "Check assignment expiration status",
+        "operationId": "checkIfExpired",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseBoolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/activity/{activityId}/my-answers": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get my answer history for an activity",
+        "description": "Student gets their answer history for an activity in an assignment",
+        "operationId": "getMyAnswerHistoryForActivity",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListStudentAnswerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/my": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get my assignments",
+        "description": "Student gets their assigned tasks",
+        "operationId": "getMyAssignments",
         "parameters": [
           {
             "name": "pageable",
@@ -1429,12 +3467,216 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                  "$ref": "#/components/schemas/ApiResponsePageAssignmentResponse"
                 }
               }
             }
           }
         }
+      }
+    },
+    "/api/v1/assignments/my-grouped": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get my assignments grouped by status",
+        "description": "Student gets assignments grouped by status",
+        "operationId": "getMyAssignmentsGrouped",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseMapStringListAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assignments/classroom/{classroomId}": {
+      "get": {
+        "tags": ["Assignments"],
+        "summary": "Get assignments for a classroom",
+        "description": "Get all assignments for a specific classroom",
+        "operationId": "getClassroomAssignments",
+        "parameters": [
+          {
+            "name": "classroomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "activeOnly",
+            "in": "query",
+            "description": "Show only active assignments",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePageAssignmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/my-school": {
+      "get": {
+        "tags": ["Admin: School Management"],
+        "summary": "Get current Admin's school details",
+        "description": "Fetches the details of the school associated with the currently authenticated School Administrator.",
+        "operationId": "getMySchool",
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved school details.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a School Administrator.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if the admin is not associated with any school.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchoolResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/my-school/teachers": {
+      "get": {
+        "tags": ["Admin: School Management"],
+        "summary": "Get teachers in the Admin's school",
+        "description": "Retrieves a paginated list of all teachers registered in the admin's school.",
+        "operationId": "getTeachersInMySchool",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the list of teachers.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserSummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a School Administrator.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageUserSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/my-school/classrooms": {
+      "get": {
+        "tags": ["Admin: School Management"],
+        "summary": "Get classrooms in the Admin's school",
+        "description": "Retrieves a paginated list of all classrooms within the admin's school.",
+        "operationId": "getClassroomsInMySchool",
+        "parameters": [
+          {
+            "name": "pageable",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Pageable"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved the list of classrooms.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden if the user is not a School Administrator.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageClassroomSummaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     },
     "/api/hello": {
@@ -1495,7 +3737,9 @@
     },
     "/api/v1/classrooms/{classId}/students/{studentId}": {
       "delete": {
-        "tags": ["classroom-controller"],
+        "tags": ["Classrooms"],
+        "summary": "Remove a student from a classroom",
+        "description": "Allows a TEACHER to remove a student from their classroom. This is a soft delete.",
         "operationId": "removeStudentFromClassroom",
         "parameters": [
           {
@@ -1518,15 +3762,165 @@
           }
         ],
         "responses": {
+          "204": {
+            "description": "Student removed successfully."
+          },
+          "403": {
+            "description": "Forbidden if the user is not a teacher in this classroom."
+          },
+          "404": {
+            "description": "Not Found if the classroom or student enrollment does not exist."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/assignments/{assignmentId}/student/{studentId}/activity/{activityId}/reset-attempts": {
+      "delete": {
+        "tags": ["Assignments"],
+        "summary": "Reset attempts for a student on a specific activity",
+        "description": "Teacher unlocks the task for redo by deleting previous answers.",
+        "operationId": "resetAttempts",
+        "parameters": [
+          {
+            "name": "assignmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
           }
         }
+      }
+    },
+    "/api/v1/admin/classrooms/{classroomId}/unassign-teacher": {
+      "delete": {
+        "tags": ["Admin: School Management"],
+        "summary": "Unassign a teacher from a classroom",
+        "description": "Removes the teacher from a classroom within the admin's school, leaving it without an assigned teacher.",
+        "operationId": "unassignTeacher",
+        "parameters": [
+          {
+            "name": "classroomId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Teacher unassigned successfully.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found if classroom ID is incorrect.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassroomResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
       }
     }
   },
   "components": {
     "schemas": {
+      "UpdateSchoolRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 2
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SchoolResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
       "ProfilePictureResponse": {
         "type": "object",
         "properties": {
@@ -1561,6 +3955,27 @@
           }
         }
       },
+      "ClassroomSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "gradeLevelCode": {
+            "type": "string"
+          }
+        }
+      },
       "ProfileResponse": {
         "type": "object",
         "properties": {
@@ -1587,6 +4002,18 @@
             "type": "integer",
             "format": "int64"
           },
+          "level": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "levelProgress": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "experienceToNextLevel": {
+            "type": "integer",
+            "format": "int64"
+          },
           "isNewUser": {
             "type": "boolean"
           },
@@ -1600,6 +4027,9 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "classroom": {
+            "$ref": "#/components/schemas/ClassroomSummaryResponse"
           }
         }
       },
@@ -1834,6 +4264,18 @@
           }
         }
       },
+      "SubmissionBasedContentRequest": {
+        "type": "object",
+        "description": "JSON data for the activity content update",
+        "properties": {
+          "translations": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ActivityTranslationRequest"
+            }
+          }
+        }
+      },
       "CategoryRequest": {
         "type": "object",
         "properties": {
@@ -1910,6 +4352,19 @@
           }
         },
         "required": ["name"]
+      },
+      "ReorderContentRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemRequest"
+            },
+            "minItems": 1
+          }
+        },
+        "required": ["items"]
       },
       "AnswerOptionRequest": {
         "type": "object",
@@ -2008,72 +4463,6 @@
         },
         "required": ["hasImage", "itemOrder", "translations"]
       },
-      "MatchingContentRequest": {
-        "type": "object",
-        "properties": {
-          "pairs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PairRequest"
-            },
-            "minItems": 1
-          }
-        },
-        "required": ["pairs"]
-      },
-      "PairRequest": {
-        "type": "object",
-        "properties": {
-          "pairOrder": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "item1ImageUrl": {
-            "type": "string"
-          },
-          "item1BlurHash": {
-            "type": "string"
-          },
-          "item2ImageUrl": {
-            "type": "string"
-          },
-          "item2BlurHash": {
-            "type": "string"
-          },
-          "translations": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/PairTranslationRequest"
-            },
-            "minProperties": 1
-          }
-        },
-        "required": ["pairOrder", "translations"]
-      },
-      "PairTranslationRequest": {
-        "type": "object",
-        "properties": {
-          "item1Text": {
-            "type": "string"
-          },
-          "item2Text": {
-            "type": "string"
-          }
-        }
-      },
-      "FillTheBlankContentRequest": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ItemRequest"
-            },
-            "minItems": 1
-          }
-        },
-        "required": ["items"]
-      },
       "UpdateClassroomRequest": {
         "type": "object",
         "properties": {
@@ -2138,6 +4527,163 @@
             "type": "string"
           },
           "email": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateAssignmentRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AssignmentResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "classroomId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lessonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "teacherId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assignedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "bestScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "status": {
+            "type": "string"
+          },
+          "isExpired": {
+            "type": "boolean"
+          },
+          "totalActivities": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answeredActivities": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correctActivities": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "statisticsSummary": {
+            "$ref": "#/components/schemas/StatisticsSummary"
+          },
+          "lessonTitle": {
+            "type": "string"
+          },
+          "chapterTitle": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "StatisticsSummary": {
+        "type": "object",
+        "properties": {
+          "averageScore": {
+            "type": "number",
+            "format": "double"
+          },
+          "completedStudents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalStudents": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "CreateSchoolRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 2
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": ["name"]
+      },
+      "InviteResponse": {
+        "type": "object",
+        "properties": {
+          "inviteToken": {
+            "type": "string"
+          },
+          "registrationLink": {
             "type": "string"
           }
         }
@@ -2414,6 +4960,31 @@
           }
         }
       },
+      "ApiResponseAssetUploadResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AssetUploadResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AssetUploadResponse": {
+        "type": "object",
+        "properties": {
+          "objectName": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
       "CreateActivityRequest": {
         "type": "object",
         "description": "JSON data for the activity",
@@ -2474,27 +5045,6 @@
         },
         "required": ["gradeLevelCode", "name"]
       },
-      "ClassroomSummaryResponse": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "code": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "gradeLevelCode": {
-            "type": "string"
-          }
-        }
-      },
       "RegisterRequest": {
         "type": "object",
         "properties": {
@@ -2512,12 +5062,9 @@
             "type": "string",
             "maxLength": 2147483647,
             "minLength": 8
-          },
-          "role": {
-            "type": "string"
           }
         },
-        "required": ["email", "password", "role"]
+        "required": ["email", "password"]
       },
       "AuthResponse": {
         "type": "object",
@@ -2526,6 +5073,16 @@
             "type": "string"
           }
         }
+      },
+      "OAuth2LoginRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["token"]
       },
       "LoginRequest": {
         "type": "object",
@@ -2550,6 +5107,568 @@
           }
         },
         "required": ["expiredToken"]
+      },
+      "CreateAssignmentRequest": {
+        "type": "object",
+        "properties": {
+          "classroomId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "lessonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          },
+          "dueAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["classroomId", "lessonId", "title"]
+      },
+      "SubmitActivityAnswerRequest": {
+        "type": "object",
+        "properties": {
+          "activityId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "answerData": {}
+        },
+        "required": ["activityId", "answerData"]
+      },
+      "ApiResponseSubmitAnswerResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SubmitAnswerResult"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ExperienceReward": {
+        "type": "object",
+        "properties": {
+          "experienceGained": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalExperience": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "previousLevel": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "newLevel": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leveledUp": {
+            "type": "boolean"
+          },
+          "experienceToNextLevel": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "levelProgress": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "StudentAnswerResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activityId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activityTitle": {
+            "type": "string"
+          },
+          "activityType": {
+            "type": "string"
+          },
+          "isCorrect": {
+            "type": "boolean"
+          },
+          "answerData": {},
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          },
+          "answeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attemptNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "experienceReward": {
+            "$ref": "#/components/schemas/ExperienceReward"
+          }
+        }
+      },
+      "SubmitAnswerResult": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "$ref": "#/components/schemas/StudentAnswerResponse"
+          }
+        }
+      },
+      "SubmissionReviewRequest": {
+        "type": "object",
+        "properties": {
+          "answerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["APPROVE", "REJECT"]
+          },
+          "feedback": {
+            "type": "string"
+          }
+        },
+        "required": ["action", "answerId"]
+      },
+      "ApiResponseSubmissionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SubmissionResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "SubmissionResponse": {
+        "type": "object",
+        "properties": {
+          "answerId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "attemptId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "assignmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "studentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "studentEmail": {
+            "type": "string"
+          },
+          "activityId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activityTitle": {
+            "type": "string"
+          },
+          "activityType": {
+            "type": "string"
+          },
+          "answerData": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          },
+          "feedback": {
+            "type": "string"
+          },
+          "answeredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Pageable": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1
+          },
+          "sort": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PageSchoolResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SchoolResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageableObject": {
+        "type": "object",
+        "properties": {
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paged": {
+            "type": "boolean"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unpaged": {
+            "type": "boolean"
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          }
+        }
+      },
+      "SortObject": {
+        "type": "object",
+        "properties": {
+          "sorted": {
+            "type": "boolean"
+          },
+          "unsorted": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageUserSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSummaryResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PageClassroomSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClassroomSummaryResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "empty": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ApiResponseLeaderboardResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LeaderboardResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "LeaderboardResponse": {
+        "type": "object",
+        "description": "Leaderboard response with ranked students",
+        "properties": {
+          "classroomId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Classroom ID (null for global leaderboard)"
+          },
+          "classroomName": {
+            "type": "string",
+            "description": "Classroom name (null for global leaderboard)"
+          },
+          "students": {
+            "type": "array",
+            "description": "List of students with their rankings",
+            "items": {
+              "$ref": "#/components/schemas/StudentEntry"
+            }
+          },
+          "currentUserPosition": {
+            "$ref": "#/components/schemas/StudentEntry",
+            "description": "Current user's position (if they're a student)"
+          },
+          "totalStudents": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of students"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Total pages available"
+          },
+          "currentPage": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Current page number"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when leaderboard was generated"
+          },
+          "lastPage": {
+            "type": "boolean"
+          },
+          "global": {
+            "type": "boolean"
+          }
+        }
+      },
+      "StudentEntry": {
+        "type": "object",
+        "description": "Student entry in leaderboard",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Position in leaderboard",
+            "example": 1
+          },
+          "studentId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Student ID",
+            "example": 123
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Student's first name",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Student's last name",
+            "example": "Doe"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Avatar URL"
+          },
+          "level": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Current level",
+            "example": 5
+          },
+          "experiencePoints": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total experience points",
+            "example": 4500
+          },
+          "experienceToNextLevel": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Experience needed for next level",
+            "example": 500
+          },
+          "levelProgress": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Progress to next level (0-99%)",
+            "example": 50
+          }
+        }
+      },
+      "ApiResponseStudentEntry": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/StudentEntry"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
       },
       "ApiResponseListLanguageResponse": {
         "type": "object",
@@ -2894,6 +6013,11 @@
             "description": "Translated lesson title",
             "example": "Счет 1-5"
           },
+          "hasAccess": {
+            "type": "boolean",
+            "description": "Whether current user has access to this lesson",
+            "example": true
+          },
           "activities": {
             "type": "array",
             "description": "Activities in this lesson (only in detailed view)",
@@ -2915,6 +6039,23 @@
             "type": "boolean",
             "description": "Whether this is the last page of activities (only in detailed view)",
             "example": true
+          }
+        }
+      },
+      "ApiResponseListGradeLevelResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GradeLevelResponse"
+            }
+          },
+          "message": {
+            "type": "string"
           }
         }
       },
@@ -3122,10 +6263,10 @@
                 "$ref": "#/components/schemas/SortingContentResponse"
               },
               {
-                "$ref": "#/components/schemas/MatchingContentResponse"
+                "$ref": "#/components/schemas/ReorderContentResponse"
               },
               {
-                "$ref": "#/components/schemas/FillTheBlankContentResponse"
+                "$ref": "#/components/schemas/SubmissionBasedContentResponse"
               }
             ]
           },
@@ -3148,17 +6289,8 @@
             "type": "integer",
             "format": "int64"
           },
-          "sentenceTemplate": {
+          "text": {
             "type": "string"
-          },
-          "correctAnswer": {
-            "type": "string"
-          },
-          "options": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         }
       },
@@ -3183,7 +6315,7 @@
           "answerText": {
             "type": "string"
           },
-          "correct": {
+          "isCorrect": {
             "type": "boolean"
           }
         }
@@ -3246,45 +6378,7 @@
           }
         }
       },
-      "MatchingContentResponse": {
-        "type": "object",
-        "properties": {
-          "pairs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Pair"
-            }
-          }
-        }
-      },
-      "Pair": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "item1Text": {
-            "type": "string"
-          },
-          "item1ImageUrl": {
-            "type": "string"
-          },
-          "item1BlurHash": {
-            "type": "string"
-          },
-          "item2Text": {
-            "type": "string"
-          },
-          "item2ImageUrl": {
-            "type": "string"
-          },
-          "item2BlurHash": {
-            "type": "string"
-          }
-        }
-      },
-      "FillTheBlankContentResponse": {
+      "ReorderContentResponse": {
         "type": "object",
         "properties": {
           "items": {
@@ -3295,28 +6389,94 @@
           }
         }
       },
-      "Pageable": {
+      "SubmissionBasedContentResponse": {
         "type": "object",
         "properties": {
-          "page": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 0
+          "imageUrl": {
+            "type": "string"
           },
-          "size": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 1
+          "imageBlurHash": {
+            "type": "string"
+          }
+        }
+      },
+      "LockedBadgeResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
           },
-          "sort": {
+          "iconUrl": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/ProgressDto"
+          }
+        }
+      },
+      "ProgressDto": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "target": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "UnlockedBadgeResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "awardedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserBadgeProgressResponse": {
+        "type": "object",
+        "properties": {
+          "unlockedBadges": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/UnlockedBadgeResponse"
+            }
+          },
+          "lockedBadges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LockedBadgeResponse"
             }
           }
         }
       },
-      "PageClassroomSummaryResponse": {
+      "ApiResponsePageSubmissionResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PageSubmissionResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PageSubmissionResponse": {
         "type": "object",
         "properties": {
           "totalElements": {
@@ -3327,12 +6487,12 @@
             "type": "integer",
             "format": "int32"
           },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
           "numberOfElements": {
             "type": "integer",
             "format": "int32"
-          },
-          "pageable": {
-            "$ref": "#/components/schemas/PageableObject"
           },
           "size": {
             "type": "integer",
@@ -3341,7 +6501,7 @@
           "content": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ClassroomSummaryResponse"
+              "$ref": "#/components/schemas/SubmissionResponse"
             }
           },
           "number": {
@@ -3362,45 +6522,288 @@
           }
         }
       },
-      "PageableObject": {
+      "ApiResponseListStudentAnswerResponse": {
         "type": "object",
         "properties": {
-          "unpaged": {
+          "success": {
             "type": "boolean"
           },
-          "pageNumber": {
-            "type": "integer",
-            "format": "int32"
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentAnswerResponse"
+            }
           },
-          "paged": {
-            "type": "boolean"
-          },
-          "pageSize": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "offset": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "sort": {
-            "$ref": "#/components/schemas/SortObject"
+          "message": {
+            "type": "string"
           }
         }
       },
-      "SortObject": {
+      "ActivityStatistics": {
         "type": "object",
         "properties": {
-          "unsorted": {
+          "activityId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "activityTitle": {
+            "type": "string"
+          },
+          "activityType": {
+            "type": "string"
+          },
+          "totalAttempts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correctAttempts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "successRate": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "ApiResponseAssignmentStatisticsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
             "type": "boolean"
           },
-          "sorted": {
+          "data": {
+            "$ref": "#/components/schemas/AssignmentStatisticsResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AssignmentStatisticsResponse": {
+        "type": "object",
+        "properties": {
+          "assignmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "assignmentTitle": {
+            "type": "string"
+          },
+          "totalStudents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completedStudents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inProgressStudents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "notStartedStudents": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "averageScore": {
+            "type": "number",
+            "format": "double"
+          },
+          "highestScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lowestScore": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completionRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "activityStatistics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStatistics"
+            }
+          }
+        }
+      },
+      "ApiResponseAssignmentProgressResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AssignmentProgressResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AssignmentProgressResponse": {
+        "type": "object",
+        "properties": {
+          "assignmentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "assignmentTitle": {
+            "type": "string"
+          },
+          "lessonId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentProgress"
+            }
+          }
+        }
+      },
+      "StudentProgress": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "studentName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "score": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "correctAnswers": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalQuestions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attemptId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ApiResponseBoolean": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponsePageAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PageAssignmentResponse"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PageAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "totalElements": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageable": {
+            "$ref": "#/components/schemas/PageableObject"
+          },
+          "numberOfElements": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignmentResponse"
+            }
+          },
+          "number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SortObject"
+          },
+          "first": {
+            "type": "boolean"
+          },
+          "last": {
             "type": "boolean"
           },
           "empty": {
             "type": "boolean"
           }
         }
+      },
+      "ApiResponseMapStringListAssignmentResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/AssignmentResponse"
+              }
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "DeleteAccountRequest": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["password"]
       },
       "ApiResponseVoid": {
         "type": "object",

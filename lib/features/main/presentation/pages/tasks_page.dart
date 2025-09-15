@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:save_tuba/core/localization/localization_extension.dart';
+import 'package:save_tuba/core/bloc/bloc.dart';
+import 'package:save_tuba/core/models/api_models.dart';
 
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
@@ -13,48 +15,12 @@ class TasksPage extends StatefulWidget {
 class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Task> _tasks = [
-    Task(
-      id: '1',
-      title: 'Complete Lesson 1',
-      description: 'Finish the introduction module',
-      isCompleted: false,
-      dueDate: DateTime.now().add(const Duration(days: 1)),
-    ),
-    Task(
-      id: '2',
-      title: 'Practice Exercises',
-      description: 'Complete 10 practice problems',
-      isCompleted: true,
-      dueDate: DateTime.now().subtract(const Duration(days: 1)),
-    ),
-    Task(
-      id: '3',
-      title: 'Review Notes',
-      description: 'Go through last week\'s notes',
-      isCompleted: false,
-      dueDate: DateTime.now().add(const Duration(days: 3)),
-    ),
-    Task(
-      id: '4',
-      title: 'Submit Assignment',
-      description: 'Submit the final project assignment',
-      isCompleted: false,
-      dueDate: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    Task(
-      id: '5',
-      title: 'Read Chapter 5',
-      description: 'Read and take notes on chapter 5',
-      isCompleted: true,
-      dueDate: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // Load grouped assignments when the page initializes
+    context.read<AssignmentBloc>().add(LoadMyAssignmentsGrouped());
   }
 
   @override
@@ -62,19 +28,6 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
     _tabController.dispose();
     super.dispose();
   }
-
-  List<Task> get _currentTasks => _tasks
-      .where(
-          (task) => !task.isCompleted && task.dueDate.isAfter(DateTime.now()))
-      .toList();
-
-  List<Task> get _overdueTasks => _tasks
-      .where(
-          (task) => !task.isCompleted && task.dueDate.isBefore(DateTime.now()))
-      .toList();
-
-  List<Task> get _completedTasks =>
-      _tasks.where((task) => task.isCompleted).toList();
 
   @override
   Widget build(BuildContext context) {
@@ -93,22 +46,6 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
                     fontSize: 24.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(8.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
-                  child: SvgPicture.asset(
-                    'assets/icons/tasks.svg',
-                    width: 20.w,
-                    height: 20.h,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
-                      BlendMode.srcIn,
-                    ),
                   ),
                 ),
               ],
@@ -180,13 +117,39 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
 
           // Tab Bar View
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTaskList(_currentTasks, context.l10n.noCurrentTasks),
-                _buildTaskList(_overdueTasks, context.l10n.noOverdueTasks),
-                _buildTaskList(_completedTasks, context.l10n.noCompletedTasks),
-              ],
+            child: BlocBuilder<AssignmentBloc, AssignmentState>(
+              builder: (context, state) {
+                if (state is AssignmentLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                  );
+                } else if (state is AssignmentError) {
+                  return _buildErrorState(state.message);
+                } else if (state is AssignmentGroupedLoaded) {
+                  return TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildAssignmentList(state.assignments.active,
+                          context.l10n.noCurrentTasks),
+                      _buildAssignmentList(state.assignments.expired,
+                          context.l10n.noOverdueTasks),
+                      _buildAssignmentList(state.assignments.completed,
+                          context.l10n.noCompletedTasks),
+                    ],
+                  );
+                }
+
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildEmptyState(context.l10n.noCurrentTasks),
+                    _buildEmptyState(context.l10n.noOverdueTasks),
+                    _buildEmptyState(context.l10n.noCompletedTasks),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -194,14 +157,15 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTaskList(List<Task> tasks, String emptyMessage) {
-    return tasks.isEmpty
+  Widget _buildAssignmentList(
+      List<AssignmentResponse> assignments, String emptyMessage) {
+    return assignments.isEmpty
         ? _buildEmptyState(emptyMessage)
         : ListView.builder(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            itemCount: tasks.length,
+            itemCount: assignments.length,
             itemBuilder: (context, index) {
-              return _buildTaskItem(tasks[index]);
+              return _buildAssignmentItem(assignments[index]);
             },
           );
   }
@@ -214,7 +178,7 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
           Icon(
             Icons.assignment_outlined,
             size: 80.sp,
-            color: Colors.grey[300],
+            color: Colors.white.withOpacity(0.5),
           ),
           SizedBox(height: 20.h),
           Text(
@@ -222,7 +186,7 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
+              color: Colors.white.withOpacity(0.8),
             ),
           ),
           SizedBox(height: 8.h),
@@ -230,7 +194,7 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
             context.l10n.tasksWillAppearHere,
             style: TextStyle(
               fontSize: 14.sp,
-              color: Colors.grey[400],
+              color: Colors.white.withOpacity(0.6),
             ),
           ),
         ],
@@ -238,31 +202,68 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTaskItem(Task task) {
-    final bool isOverdue =
-        !task.isCompleted && task.dueDate.isBefore(DateTime.now());
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64.sp,
+            color: Colors.white,
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            message,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16.sp,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24.h),
+          ElevatedButton(
+            onPressed: () {
+              context.read<AssignmentBloc>().add(LoadMyAssignmentsGrouped());
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black87,
+            ),
+            child: Text(context.l10n.pleaseTryAgain),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssignmentItem(AssignmentResponse assignment) {
+    final bool isOverdue = assignment.dueAt != null &&
+        assignment.dueAt!.isBefore(DateTime.now()) &&
+        assignment.completionPercentage < 100;
+    final bool isCompleted = assignment.completionPercentage >= 100;
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: task.isCompleted
-            ? Colors.grey[50]
+        color: isCompleted
+            ? Colors.white.withOpacity(0.1)
             : isOverdue
-                ? Colors.red[50]
-                : Colors.white,
+                ? Colors.red.withOpacity(0.1)
+                : Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: task.isCompleted
-              ? Colors.grey[300]!
+          color: isCompleted
+              ? Colors.white.withOpacity(0.3)
               : isOverdue
-                  ? Colors.red[200]!
-                  : Colors.grey[200]!,
+                  ? Colors.red.withOpacity(0.5)
+                  : Colors.white.withOpacity(0.4),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -272,39 +273,70 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            task.title,
+            assignment.title,
             style: TextStyle(
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
-              color: task.isCompleted ? Colors.grey[600] : Colors.black87,
-              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+              color: isCompleted ? Colors.white.withOpacity(0.7) : Colors.white,
+              decoration: isCompleted ? TextDecoration.lineThrough : null,
             ),
           ),
-          if (task.description.isNotEmpty) ...[
+          if (assignment.description != null &&
+              assignment.description!.isNotEmpty) ...[
             SizedBox(height: 4.h),
             Text(
-              task.description,
+              assignment.description!,
               style: TextStyle(
                 fontSize: 14.sp,
-                color: task.isCompleted ? Colors.grey[500] : Colors.grey[600],
+                color: isCompleted
+                    ? Colors.white.withOpacity(0.5)
+                    : Colors.white.withOpacity(0.8),
               ),
             ),
           ],
           SizedBox(height: 8.h),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: isOverdue ? Colors.red[100] : Colors.grey[100],
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: Text(
-              _formatDate(task.dueDate),
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: isOverdue ? Colors.red[700] : Colors.grey[600],
-                fontWeight: isOverdue ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
+          Row(
+            children: [
+              if (assignment.dueAt != null) ...[
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: isOverdue
+                        ? Colors.red.withOpacity(0.2)
+                        : Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    _formatDate(assignment.dueAt!),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: isOverdue
+                          ? Colors.red[200]
+                          : Colors.white.withOpacity(0.8),
+                      fontWeight:
+                          isOverdue ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8.w),
+              ],
+              if (isCompleted)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    context.l10n.completed,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.green[200],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -328,20 +360,4 @@ class _TasksPageState extends State<TasksPage> with TickerProviderStateMixin {
           .replaceAll('{days}', (-difference).toString());
     }
   }
-}
-
-class Task {
-  final String id;
-  final String title;
-  final String description;
-  bool isCompleted;
-  final DateTime dueDate;
-
-  Task({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.isCompleted,
-    required this.dueDate,
-  });
 }

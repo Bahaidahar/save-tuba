@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:save_tuba/core/bloc/language/language_bloc.dart';
-import 'package:save_tuba/core/localization/app_localizations.dart';
+import 'package:save_tuba/core/localization/localization_extension.dart';
 import 'package:save_tuba/core/services/language_service.dart';
 import 'package:save_tuba/core/theme/app_theme.dart';
 import 'package:save_tuba/core/widgets/language_bottom_sheet.dart';
@@ -14,7 +15,7 @@ class ActionsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = context.l10n;
 
     return WidgetWrapper(
       title: l10n.settings,
@@ -39,6 +40,19 @@ class ActionsCard extends StatelessWidget {
                 },
                 child: _buildLanguageFlag(currentLanguage),
               );
+            },
+          ),
+
+          SizedBox(height: 12.h),
+
+          // Кнопка Classroom
+          _buildActionButton(
+            context: context,
+            icon: Icons.school,
+            title: l10n.classroom,
+            subtitle: l10n.accessYourClasses,
+            onTap: () {
+              context.go('/classroom');
             },
           ),
 
@@ -80,7 +94,7 @@ class ActionsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(3.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 2,
             offset: const Offset(0, 1),
           ),
@@ -133,7 +147,7 @@ class ActionsCard extends StatelessWidget {
               width: 40.w,
               height: 40.h,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
+                color: AppTheme.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(

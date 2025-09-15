@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_service.dart';
 
 class AuthInterceptor extends Interceptor {
   static const String _baseUrl = 'https://savetuba.it2-server.com';
@@ -13,6 +14,18 @@ class AuthInterceptor extends Interceptor {
       _prefs = await SharedPreferences.getInstance();
     }
     return _prefs!;
+  }
+
+  // Method to manually clear tokens
+  static Future<void> clearTokens() async {
+    try {
+      final prefs = await _preferences;
+      await prefs.remove('access_token');
+      await prefs.remove('refresh_token');
+      print('Tokens cleared manually');
+    } catch (e) {
+      print('Error clearing tokens manually: $e');
+    }
   }
 
   @override
@@ -36,20 +49,26 @@ class AuthInterceptor extends Interceptor {
   @override
   Future<void> onError(
       DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
+    if (err.response?.statusCode == 403) {
+      // Forbidden - possibly invalid token, clear it
+      try {
+        final prefs = await _preferences;
+        await prefs.remove('access_token');
+        await prefs.remove('refresh_token');
+        print('Cleared tokens due to 403 Forbidden error');
+      } catch (clearError) {
+        print('Error clearing tokens on 403: $clearError');
+      }
+    } else if (err.response?.statusCode == 401) {
       // Token expired, try to refresh
       try {
         final prefs = await _preferences;
         final refreshToken = prefs.getString('refresh_token');
 
         if (refreshToken != null) {
-          final dio = Dio();
-          final response = await dio.post(
-            '$_baseApiUrl/auth/refresh',
-            options: Options(
-              headers: {'Authorization': 'Bearer $refreshToken'},
-            ),
-          );
+          // Use ApiService for token refresh
+          final apiService = ApiService.instance;
+          final response = await apiService.refreshTokenWithToken(refreshToken);
 
           if (response.statusCode == 200) {
             final newToken = response.data['accessToken'];
@@ -59,7 +78,8 @@ class AuthInterceptor extends Interceptor {
             final originalRequest = err.requestOptions;
             originalRequest.headers['Authorization'] = 'Bearer $newToken';
 
-            final retryResponse = await dio.fetch(originalRequest);
+            // Use the same Dio instance to retry
+            final retryResponse = await apiService.dio.fetch(originalRequest);
             handler.resolve(retryResponse);
             return;
           }

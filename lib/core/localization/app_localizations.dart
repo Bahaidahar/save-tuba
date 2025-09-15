@@ -66,6 +66,9 @@ class AppLocalizations {
       'cancel': 'Cancel',
       'yes': 'Yes',
       'no': 'No',
+      'error_loading_profile': 'Error loading profile',
+      'please_try_again': 'Please try again',
+      'number_of_students': 'Number of students',
 
       // Tasks
       'add_task': 'Add Task',
@@ -90,6 +93,43 @@ class AppLocalizations {
       'yesterday': 'Yesterday',
       'in_days': 'In {days} days',
       'days_ago': '{days} days ago',
+
+      // Class module
+      'classes': 'Classes',
+      'retry': 'Retry',
+      'demo_data': 'Demo Data',
+      'refresh': 'Refresh',
+      'error_loading_data': 'Error loading data',
+      'classes_not_found': 'Classes not found',
+      'try_refreshing': 'Try refreshing the page',
+      'unknown_error': 'Unknown error',
+
+      // Ordering game
+      'arrange_elements_correctly': 'Arrange the elements in the correct order',
+      'winter': 'Winter',
+      'spring': 'Spring',
+      'summer': 'Summer',
+      'autumn': 'Autumn',
+      'excellent': 'Excellent!',
+      'all_elements_correct': 'All elements are arranged in the correct order!',
+      'almost_correct': 'Almost correct!',
+      'correct_positions':
+          'Correctly placed: {correct} out of {total} elements.',
+      'continue': 'Continue',
+      'hint': 'Hint',
+      'reset': 'Reset',
+      'check': 'Check',
+      'correct_order': 'Correct order:',
+      'arrangement_game': 'Arrangement Game',
+      'hold_and_drag': 'Hold and drag elements to change order',
+      'hint_text':
+          'Hint: "{item}" should be at position {position}, currently at position {current}',
+      'full_leaderboard_coming_soon': 'Full leaderboard coming soon!',
+      'no_badges_available': 'No badges available',
+      'error_occurred': 'An error occurred: {error}',
+      'classroom': 'Classroom',
+      'view_classroom': 'View Classroom',
+      'access_your_classes': 'Access your classes and lessons',
 
       // Class
       'class_code': 'Class Code',
@@ -203,6 +243,9 @@ class AppLocalizations {
       'cancel': 'Отмена',
       'yes': 'Да',
       'no': 'Нет',
+      'error_loading_profile': 'Ошибка загрузки профиля',
+      'please_try_again': 'Попробуйте еще раз',
+      'number_of_students': 'Количество учеников',
 
       // Tasks
       'add_task': 'Добавить задачу',
@@ -227,6 +270,44 @@ class AppLocalizations {
       'yesterday': 'Вчера',
       'in_days': 'Через {days} дней',
       'days_ago': '{days} дней назад',
+
+      // Class module
+      'classes': 'Классы',
+      'retry': 'Повторить',
+      'demo_data': 'Демо данные',
+      'refresh': 'Обновить',
+      'error_loading_data': 'Ошибка загрузки данных',
+      'classes_not_found': 'Классы не найдены',
+      'try_refreshing': 'Попробуйте обновить страницу',
+      'unknown_error': 'Неизвестная ошибка',
+
+      // Ordering game
+      'arrange_elements_correctly': 'Расставьте элементы в правильном порядке',
+      'winter': 'Зима',
+      'spring': 'Весна',
+      'summer': 'Лето',
+      'autumn': 'Осень',
+      'excellent': 'Отлично!',
+      'all_elements_correct': 'Все элементы расставлены в правильном порядке!',
+      'almost_correct': 'Почти правильно!',
+      'correct_positions':
+          'Правильно размещено: {correct} из {total} элементов.',
+      'continue': 'Продолжить',
+      'hint': 'Подсказка',
+      'reset': 'Сбросить',
+      'check': 'Проверить',
+      'correct_order': 'Правильный порядок:',
+      'arrangement_game': 'Расстановка по порядку',
+      'hold_and_drag':
+          'Удерживайте и перетаскивайте элементы для изменения порядка',
+      'hint_text':
+          'Подсказка: "{item}" должен быть на позиции {position}, сейчас на позиции {current}',
+      'full_leaderboard_coming_soon': 'Полная таблица лидеров скоро!',
+      'no_badges_available': 'Достижения недоступны',
+      'error_occurred': 'Произошла ошибка: {error}',
+      'classroom': 'Класс',
+      'view_classroom': 'Просмотр класса',
+      'access_your_classes': 'Доступ к вашим классам и урокам',
 
       // Class
       'class_code': 'Код класса',
@@ -340,6 +421,9 @@ class AppLocalizations {
       'cancel': 'Бас тарту',
       'yes': 'Иә',
       'no': 'Жоқ',
+      'error_loading_profile': 'Профильді жүктеу қатесі',
+      'please_try_again': 'Қайталап көріңіз',
+      'number_of_students': 'Оқушылар саны',
 
       // Tasks
       'add_task': 'Тапсырма қосу',
@@ -366,6 +450,43 @@ class AppLocalizations {
       'yesterday': 'Бүгін бұрын',
       'in_days': '{days} күннен кейін',
       'days_ago': '{days} күн бұрын',
+
+      // Class module
+      'classes': 'Сыныптар',
+      'retry': 'Қайталау',
+      'demo_data': 'Демо деректер',
+      'refresh': 'Жаңарту',
+      'error_loading_data': 'Деректерді жүктеу қатесі',
+      'classes_not_found': 'Сыныптар табылмады',
+      'try_refreshing': 'Бетті жаңартуға тырысыңыз',
+      'unknown_error': 'Белгісіз қате',
+
+      // Ordering game
+      'arrange_elements_correctly': 'Элементтерді дұрыс ретпен орналастырыңыз',
+      'winter': 'Қыс',
+      'spring': 'Көктем',
+      'summer': 'Жаз',
+      'autumn': 'Күз',
+      'excellent': 'Керемет!',
+      'all_elements_correct': 'Барлық элементтер дұрыс ретпен орналастырылған!',
+      'almost_correct': 'Дереу дұрыс!',
+      'correct_positions':
+          'Дұрыс орналастырылған: {correct} {total} элементтен.',
+      'continue': 'Жалғастыру',
+      'hint': 'Кеңес',
+      'reset': 'Тазалау',
+      'check': 'Тексеру',
+      'correct_order': 'Дұрыс рет:',
+      'arrangement_game': 'Ретпен орналастыру ойыны',
+      'hold_and_drag': 'Ретті өзгерту үшін элементтерді ұстап сүйреңіз',
+      'hint_text':
+          'Кеңес: "{item}" {position} позицияда болуы керек, қазір {current} позицияда',
+      'full_leaderboard_coming_soon': 'Толық көшбасшылар тақтасы жақында!',
+      'no_badges_available': 'Жетістіктер қолжетімді емес',
+      'error_occurred': 'Қате орын алды: {error}',
+      'classroom': 'Сынып',
+      'view_classroom': 'Сыныпты көру',
+      'access_your_classes': 'Сыныптарыңызға және сабақтарыңызға кіру',
 
       // Class
       'class_code': 'Сынып коды',
@@ -488,6 +609,9 @@ class AppLocalizations {
   String get cancel => get('cancel');
   String get yes => get('yes');
   String get no => get('no');
+  String get errorLoadingProfile => get('error_loading_profile');
+  String get pleaseTryAgain => get('please_try_again');
+  String get numberOfStudents => get('number_of_students');
 
   String get addTask => get('add_task');
   String get taskTitle => get('task_title');
@@ -511,6 +635,47 @@ class AppLocalizations {
   String get yesterday => get('yesterday');
   String get inDays => get('in_days');
   String get daysAgo => get('days_ago');
+
+  // Class module getters
+  String get classes => get('classes');
+  String get retry => get('retry');
+  String get demoData => get('demo_data');
+  String get refresh => get('refresh');
+  String get errorLoadingData => get('error_loading_data');
+  String get classesNotFound => get('classes_not_found');
+  String get tryRefreshing => get('try_refreshing');
+  String get unknownError => get('unknown_error');
+
+  // Ordering game getters
+  String get arrangeElementsCorrectly => get('arrange_elements_correctly');
+  String get winter => get('winter');
+  String get spring => get('spring');
+  String get summer => get('summer');
+  String get autumn => get('autumn');
+  String get excellent => get('excellent');
+  String get allElementsCorrect => get('all_elements_correct');
+  String get almostCorrect => get('almost_correct');
+  String correctPositions(int correct, int total) => get('correct_positions')
+      .replaceAll('{correct}', correct.toString())
+      .replaceAll('{total}', total.toString());
+  String get continue_ => get('continue');
+  String get hint => get('hint');
+  String get reset => get('reset');
+  String get check => get('check');
+  String get correctOrder => get('correct_order');
+  String get arrangementGame => get('arrangement_game');
+  String get holdAndDrag => get('hold_and_drag');
+  String hintText(String item, int position, int current) => get('hint_text')
+      .replaceAll('{item}', item)
+      .replaceAll('{position}', position.toString())
+      .replaceAll('{current}', current.toString());
+  String get fullLeaderboardComingSoon => get('full_leaderboard_coming_soon');
+  String get noBadgesAvailable => get('no_badges_available');
+  String errorOccurred(String error) =>
+      get('error_occurred').replaceAll('{error}', error);
+  String get classroom => get('classroom');
+  String get viewClassroom => get('view_classroom');
+  String get accessYourClasses => get('access_your_classes');
 
   String get classCode => get('class_code');
   String get teacher => get('teacher');

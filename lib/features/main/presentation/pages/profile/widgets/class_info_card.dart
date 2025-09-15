@@ -49,7 +49,7 @@ class ClassInfoCard extends StatelessWidget {
           // Number of students
           _buildInfoRow(
             icon: Icons.people,
-            title: context.l10n.studentsInClass,
+            title: context.l10n.numberOfStudents,
             value: '24',
             iconColor: AppTheme.secondary,
           ),
@@ -70,7 +70,7 @@ class ClassInfoCard extends StatelessWidget {
           width: 40.w,
           height: 40.h,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(

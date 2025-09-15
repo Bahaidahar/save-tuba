@@ -35,11 +35,14 @@ class AuthService {
     try {
       final prefs = await _preferences;
       await prefs.setString(_accessTokenKey, accessToken);
+      print('✅ Access token saved: ${accessToken.substring(0, 20)}...');
+
       if (refreshToken != null) {
         await prefs.setString(_refreshTokenKey, refreshToken);
+        print('✅ Refresh token saved: ${refreshToken.substring(0, 20)}...');
       }
     } catch (e) {
-      print('Error saving tokens: $e');
+      print('❌ Error saving tokens: $e');
     }
   }
 
@@ -77,9 +80,11 @@ class AuthService {
   Future<bool> isAuthenticated() async {
     try {
       final token = await getAccessToken();
+      print(
+          '🔍 Checking authentication - Token: ${token != null ? '${token.substring(0, 20)}...' : 'null'}');
       return token != null && token.isNotEmpty;
     } catch (e) {
-      print('Error checking authentication: $e');
+      print('❌ Error checking authentication: $e');
       return false;
     }
   }

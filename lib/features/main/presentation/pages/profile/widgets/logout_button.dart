@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:save_tuba/core/widgets/widgets.dart';
+import 'package:save_tuba/core/services/auth_service.dart';
 
 class LogoutButton extends StatelessWidget {
   const LogoutButton({super.key});
 
   void _showLogoutModal(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = context.l10n;
 
     showModalBottomSheet(
       context: context,
@@ -77,8 +78,18 @@ class LogoutButton extends StatelessWidget {
                   SizedBox(height: 12.h),
                   CustomButton(
                     text: l10n.logout,
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.of(context).pop();
+
+                      // Очищаем токены при выходе
+                      try {
+                        final authService = await AuthService.instance;
+                        await authService.clearTokens();
+                        print('🚪 Logout: Tokens cleared successfully');
+                      } catch (e) {
+                        print('❌ Error clearing tokens on logout: $e');
+                      }
+
                       // Навигация к onboarding
                       context.go('/onboarding');
                     },
@@ -99,7 +110,7 @@ class LogoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = context.l10n;
 
     return SizedBox(
       width: double.infinity,

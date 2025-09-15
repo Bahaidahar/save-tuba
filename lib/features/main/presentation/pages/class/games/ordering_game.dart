@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:save_tuba/core/widgets/widgets.dart';
+import 'package:save_tuba/core/localization/localization_extension.dart';
 
 import 'base_game.dart';
 
@@ -31,12 +32,17 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
   void _initializeGame() {
     final config = widget.gameMeta.config;
     _instruction =
-        config['instruction'] ?? 'Расставьте элементы в правильном порядке';
+        config['instruction'] ?? context.l10n.arrangeElementsCorrectly;
     _correctOrder = List<String>.from(config['correctOrder'] ?? []);
 
     // Default data if none provided
     if (_correctOrder.isEmpty) {
-      _correctOrder = ['Зима', 'Весна', 'Лето', 'Осень'];
+      _correctOrder = [
+        context.l10n.winter,
+        context.l10n.spring,
+        context.l10n.summer,
+        context.l10n.autumn
+      ];
     }
 
     // Shuffle the items for the game
@@ -75,11 +81,11 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
 
     if (isCorrect) {
       _showResultDialog(
-          'Отлично!', 'Все элементы расставлены в правильном порядке!', true);
+          context.l10n.excellent, context.l10n.allElementsCorrect, true);
     } else {
       _showResultDialog(
-          'Почти правильно!',
-          'Правильно размещено: $correctPositions из ${_correctOrder.length} элементов.',
+          context.l10n.almostCorrect,
+          context.l10n.correctPositions(correctPositions, _correctOrder.length),
           false);
     }
   }
@@ -114,8 +120,8 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
               Navigator.pop(context);
               completeGame();
             },
-            child: const Text(
-              'Продолжить',
+            child: Text(
+              context.l10n.continue_,
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -143,7 +149,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Подсказка: "${correctItem}" должен быть на позиции ${i + 1}, сейчас на позиции $currentPosition',
+              context.l10n.hintText(correctItem, i + 1, currentPosition),
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: const Color.fromRGBO(116, 136, 21, 1),
@@ -159,7 +165,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
   Widget buildGameContent() {
     return Column(
       children: [
-        buildGameHeader('Расстановка по порядку'),
+        buildGameHeader(context.l10n.arrangementGame),
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(20.w),
@@ -206,7 +212,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
-                          'Удерживайте и перетаскивайте элементы для изменения порядка',
+                          context.l10n.holdAndDrag,
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: Colors.white.withOpacity(0.9),
@@ -237,9 +243,8 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
                             final double animValue =
                                 Curves.easeInOut.transform(animation.value);
                             final double elevation =
-                                lerpDouble(0, 6, animValue) ?? 0;
-                            final double scale =
-                                lerpDouble(1, 1.02, animValue) ?? 1;
+                                lerpDouble(0, 6, animValue);
+                            final double scale = lerpDouble(1, 1.02, animValue);
                             return Transform.scale(
                               scale: scale,
                               child: Material(
@@ -354,7 +359,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
                     children: [
                       Expanded(
                         child: CustomButton(
-                          text: 'Подсказка',
+                          text: context.l10n.hint,
                           onPressed: _showHint,
                           backgroundColor: Colors.orange.withOpacity(0.3),
                           textColor: Colors.white,
@@ -364,7 +369,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: CustomButton(
-                          text: 'Сбросить',
+                          text: context.l10n.reset,
                           onPressed: _resetGame,
                           backgroundColor: Colors.red.withOpacity(0.3),
                           textColor: Colors.white,
@@ -374,7 +379,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
                       SizedBox(width: 8.w),
                       Expanded(
                         child: CustomButton(
-                          text: 'Проверить',
+                          text: context.l10n.check,
                           onPressed: _checkOrder,
                           icon: Icon(Icons.check),
                         ),
@@ -393,7 +398,7 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
                     child: Column(
                       children: [
                         Text(
-                          'Правильный порядок:',
+                          context.l10n.correctOrder,
                           style: TextStyle(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.w600,
@@ -430,10 +435,3 @@ class _OrderingGameState extends BaseGameState<OrderingGame> {
 double lerpDouble(double a, double b, double t) {
   return a + (b - a) * t;
 }
-
-
-
-
-
-
-

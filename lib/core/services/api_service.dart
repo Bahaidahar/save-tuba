@@ -29,7 +29,8 @@ class ApiService {
       responseBody: true,
       responseHeader: false,
       error: true,
-      compact: true,
+      compact: false, // Show full error details
+      maxWidth: 120,
     ));
 
     // Add auth interceptor
@@ -75,6 +76,31 @@ class ApiService {
     return await _dio.post('/auth/refresh');
   }
 
+  // Enhanced refresh token method for interceptor use
+  Future<Response> refreshTokenWithToken(String refreshToken) async {
+    return await _dio.post(
+      '/auth/refresh',
+      options: Options(
+        headers: {'Authorization': 'Bearer $refreshToken'},
+      ),
+    );
+  }
+
+  // Alternative refresh method that doesn't use the interceptor
+  Future<Response> refreshTokenDirect() async {
+    final dio = Dio(BaseOptions(
+      baseUrl: _baseApiUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ));
+
+    return await dio.post('/auth/refresh');
+  }
+
   Future<Response> refreshGuestToken(String expiredToken) async {
     return await _dio.post('/auth/guest/refresh', data: {
       'expiredToken': expiredToken,
@@ -83,6 +109,12 @@ class ApiService {
 
   Future<Response> logout() async {
     return await _dio.post('/auth/logout');
+  }
+
+  Future<Response> forgotPassword(String email) async {
+    return await _dio.post('/auth/forgot-password', data: {
+      'email': email,
+    });
   }
 
   // Profile endpoints
@@ -300,6 +332,10 @@ class ApiService {
     });
   }
 
+  Future<Response> getMyClassroomForStudent() async {
+    return await _dio.get('/classrooms/my-classroom');
+  }
+
   Future<Response> getClassroomDetails(int id) async {
     return await _dio.get('/classrooms/$id');
   }
@@ -337,5 +373,192 @@ class ApiService {
   // Activity types endpoint
   Future<Response> getActivityTypes() async {
     return await _dio.get('/curriculum/activity-types');
+  }
+
+  // School endpoints
+  Future<Response> getSchools({int page = 0, int size = 10}) async {
+    return await _dio.get('/schools', queryParameters: {
+      'page': page,
+      'size': size,
+    });
+  }
+
+  Future<Response> getSchoolById(int id) async {
+    return await _dio.get('/schools/$id');
+  }
+
+  Future<Response> createSchool(Map<String, dynamic> data) async {
+    return await _dio.post('/schools', data: data);
+  }
+
+  Future<Response> updateSchool(int id, Map<String, dynamic> data) async {
+    return await _dio.put('/schools/$id', data: data);
+  }
+
+  Future<Response> deleteSchool(int id) async {
+    return await _dio.delete('/schools/$id');
+  }
+
+  Future<Response> addSchoolAdmin(int schoolId, int userId) async {
+    return await _dio.post('/schools/$schoolId/admin/$userId');
+  }
+
+  Future<Response> removeSchoolAdmin(int schoolId, int userId) async {
+    return await _dio.delete('/schools/$schoolId/admin/$userId');
+  }
+
+  Future<Response> inviteTeacherToSchool(
+      int schoolId, Map<String, dynamic> data) async {
+    return await _dio.post('/schools/$schoolId/admin-invite', data: data);
+  }
+
+  // Admin endpoints
+  Future<Response> getMySchool() async {
+    return await _dio.get('/admin/my-school');
+  }
+
+  Future<Response> getMySchoolUsers({int page = 0, int size = 10}) async {
+    return await _dio.get('/admin/my-school/users', queryParameters: {
+      'page': page,
+      'size': size,
+    });
+  }
+
+  Future<Response> getMySchoolClassrooms({int page = 0, int size = 10}) async {
+    return await _dio.get('/admin/my-school/classrooms', queryParameters: {
+      'page': page,
+      'size': size,
+    });
+  }
+
+  Future<Response> inviteTeacherToMySchool(Map<String, dynamic> data) async {
+    return await _dio.post('/admin/my-school/teacher-invite', data: data);
+  }
+
+  // Badges endpoints
+  Future<Response> getMyBadges() async {
+    return await _dio.get('/badges/my');
+  }
+
+  // Leaderboard endpoints
+  Future<Response> getGlobalLeaderboard({
+    int page = 0,
+    int size = 20,
+    int? topN,
+  }) async {
+    return await _dio.get('/leaderboard/global', queryParameters: {
+      'page': page,
+      'size': size,
+      if (topN != null) 'topN': topN,
+    });
+  }
+
+  Future<Response> getClassroomLeaderboard(
+    int classroomId, {
+    int page = 0,
+    int size = 20,
+    int? topN,
+  }) async {
+    return await _dio
+        .get('/leaderboard/classroom/$classroomId', queryParameters: {
+      'page': page,
+      'size': size,
+      if (topN != null) 'topN': topN,
+    });
+  }
+
+  Future<Response> getStudentPosition(int classroomId, int studentId) async {
+    return await _dio
+        .get('/leaderboard/classroom/$classroomId/student/$studentId');
+  }
+
+  // Assignment endpoints
+  Future<Response> createAssignment(Map<String, dynamic> data) async {
+    return await _dio.post('/assignments', data: data);
+  }
+
+  Future<Response> getAssignment(int assignmentId) async {
+    return await _dio.get('/assignments/$assignmentId');
+  }
+
+  Future<Response> updateAssignment(
+      int assignmentId, Map<String, dynamic> data) async {
+    return await _dio.put('/assignments/$assignmentId', data: data);
+  }
+
+  Future<Response> deleteAssignment(int assignmentId) async {
+    return await _dio.delete('/assignments/$assignmentId');
+  }
+
+  Future<Response> submitAnswer(
+      int assignmentId, Map<String, dynamic> data) async {
+    return await _dio.post('/assignments/$assignmentId/submit-answer',
+        data: data);
+  }
+
+  Future<Response> reviewSubmission(
+      int assignmentId, Map<String, dynamic> data) async {
+    return await _dio.post('/assignments/$assignmentId/review-submission',
+        data: data);
+  }
+
+  Future<Response> getMyAssignments({int page = 0, int size = 10}) async {
+    return await _dio.get('/assignments/my', queryParameters: {
+      'page': page,
+      'size': size,
+    });
+  }
+
+  Future<Response> getMyAssignmentsGrouped() async {
+    return await _dio.get('/assignments/my-grouped');
+  }
+
+  Future<Response> getClassroomAssignments(
+    int classroomId, {
+    int page = 0,
+    int size = 10,
+    bool activeOnly = true,
+  }) async {
+    return await _dio
+        .get('/assignments/classroom/$classroomId', queryParameters: {
+      'page': page,
+      'size': size,
+      'activeOnly': activeOnly,
+    });
+  }
+
+  Future<Response> getSubmissionsForReview(int assignmentId) async {
+    return await _dio.get('/assignments/$assignmentId/submissions');
+  }
+
+  Future<Response> getSubmissionDetails(int assignmentId, int answerId) async {
+    return await _dio.get('/assignments/$assignmentId/submissions/$answerId');
+  }
+
+  Future<Response> getStudentAnswerHistoryForActivity(
+    int assignmentId,
+    int studentId,
+    int activityId,
+  ) async {
+    return await _dio.get(
+        '/assignments/$assignmentId/student/$studentId/activity/$activityId/answers');
+  }
+
+  Future<Response> getAssignmentStatistics(int assignmentId) async {
+    return await _dio.get('/assignments/$assignmentId/statistics');
+  }
+
+  Future<Response> getAssignmentProgress(int assignmentId) async {
+    return await _dio.get('/assignments/$assignmentId/progress');
+  }
+
+  Future<Response> checkIfExpired(int assignmentId) async {
+    return await _dio.get('/assignments/$assignmentId/is-expired');
+  }
+
+  Future<Response> getMyAnswerHistoryForActivity(
+      int assignmentId, int activityId) async {
+    return await _dio
+        .get('/assignments/$assignmentId/activity/$activityId/my-answers');
   }
 }

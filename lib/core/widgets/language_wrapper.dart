@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:save_tuba/core/bloc/language/language_bloc.dart';
+import 'package:save_tuba/core/bloc/bloc.dart';
 
 class LanguageWrapper extends StatelessWidget {
   final Widget child;
@@ -12,8 +12,24 @@ class LanguageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => LanguageBloc()..add(LoadLanguage()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<LanguageBloc>(
+          create: (context) => LanguageBloc()..add(LoadLanguage()),
+        ),
+        BlocProvider<UserBloc>(
+          create: (context) => UserBloc()..add(LoadUserProfile()),
+        ),
+        BlocProvider<BadgesBloc>(
+          create: (context) => BadgesBloc()..add(LoadMyBadges()),
+        ),
+        BlocProvider<LeaderboardBloc>(
+          create: (context) => LeaderboardBloc(),
+        ),
+        BlocProvider<AssignmentBloc>(
+          create: (context) => AssignmentBloc(),
+        ),
+      ],
       child: child,
     );
   }

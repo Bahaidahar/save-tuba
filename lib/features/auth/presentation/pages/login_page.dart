@@ -3,8 +3,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/widgets/widgets.dart';
-import '../../../../core/localization/localization_extension.dart';
+import '../../../../core/repositories/repositories.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   static const String route = '/login';
@@ -19,10 +20,12 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final ApiRepository _apiRepository = ApiRepository();
 
-  // Add state variables for validation
+  // Add state variables for validation and loading
   String? _emailError;
   String? _passwordError;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -38,12 +41,13 @@ class _LoginPageState extends State<LoginPage> {
     // Validate email
     if (_emailController.text.isEmpty) {
       setState(() {
-        _emailError = context.l10n.pleaseEnterEmail;
+        _emailError = "Email is required";
       });
       isValid = false;
-    } else if (!_emailController.text.contains('@')) {
+    } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+        .hasMatch(_emailController.text)) {
       setState(() {
-        _emailError = context.l10n.pleaseEnterValidEmail;
+        _emailError = "Please enter a valid email";
       });
       isValid = false;
     } else {
@@ -55,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
     // Validate password
     if (_passwordController.text.isEmpty) {
       setState(() {
-        _passwordError = context.l10n.pleaseEnterPassword;
+        _passwordError = "Password is required";
       });
       isValid = false;
     } else {
@@ -81,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    context.l10n.signIn,
+                    "Login",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24.sp,
@@ -103,24 +107,22 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         // Email field
                         CustomInputField(
-                          label: context.l10n.email,
-                          hintText: context.l10n.email,
+                          label: "Email",
+                          hintText: "Enter your email",
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          errorMessage:
-                              _emailError, // Pass error message directly
+                          errorMessage: _emailError,
                         ),
 
                         SizedBox(height: 24.h),
 
                         // Password field
                         CustomInputField(
-                          label: context.l10n.password,
-                          hintText: context.l10n.password,
+                          label: "Password",
+                          hintText: "Enter your password",
                           controller: _passwordController,
                           obscureText: true,
-                          errorMessage:
-                              _passwordError, // Pass error message directly
+                          errorMessage: _passwordError,
                         ),
 
                         SizedBox(height: 16.h),
@@ -128,9 +130,9 @@ class _LoginPageState extends State<LoginPage> {
                         // Forgot password link
                         Center(
                           child: CustomTextButton(
-                            text: context.l10n.forgotPassword,
+                            text: "Forgot Password?",
                             onPressed: () {
-                              // Handle forgot password
+                              context.push(ForgotPasswordPage.route);
                             },
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w400,
@@ -141,23 +143,21 @@ class _LoginPageState extends State<LoginPage> {
 
                         // Go button
                         PrimaryButton(
-                          text: context.l10n.go,
-                          onPressed: () {
-                            if (_validateForm()) {
-                              // Handle login
-                              context.go('/home');
-                            }
-                          },
+                          text: "Login",
+                          onPressed: _isLoading ? null : _handleLogin,
+                          isLoading: _isLoading,
                         ),
 
                         SizedBox(height: 20.h),
 
                         // Sign up button
                         SecondaryButton(
-                          text: context.l10n.signUp,
-                          onPressed: () {
-                            context.push(RegisterPage.route);
-                          },
+                          text: "Sign Up",
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  context.push(RegisterPage.route);
+                                },
                         ),
 
                         SizedBox(height: 40.h),
@@ -170,10 +170,12 @@ class _LoginPageState extends State<LoginPage> {
               // Back button at the bottom
               Center(
                 child: CustomTextButton(
-                  text: context.l10n.back,
-                  onPressed: () {
-                    context.pop();
-                  },
+                  text: "Back",
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          context.pop();
+                        },
                 ),
               ),
 
@@ -183,5 +185,50 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_validateForm()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await _apiRepository.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        if (result.success) {
+          // Login successful, navigate to home (token is saved automatically in ApiRepository)
+          context.go('/home');
+        } else {
+          // Show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result.message ?? 'Login failed'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorOccurred(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }

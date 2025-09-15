@@ -4,7 +4,10 @@ import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/onboarding/presentation/pages/guest_loading_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
+import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/main/presentation/pages/home_page.dart';
+import '../../features/main/presentation/pages/class/class_page.dart';
 import '../widgets/splash_screen.dart';
 
 class AppRouter {
@@ -34,9 +37,24 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
       ),
       GoRoute(
+        path: ForgotPasswordPage.route,
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: ChangePasswordPage.route,
+        name: 'change-password',
+        builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
         path: HomePage.route,
         name: 'home',
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: ClassPage.route,
+        name: 'classroom',
+        builder: (context, state) => const ClassPage(),
       ),
     ],
   );

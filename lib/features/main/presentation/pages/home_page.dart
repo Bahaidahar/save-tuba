@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:save_tuba/core/theme/app_theme.dart';
 import 'package:save_tuba/core/widgets/welcome_modal.dart';
+import 'package:save_tuba/core/bloc/bloc.dart';
 import 'package:save_tuba/core/services/welcome_service.dart';
 import 'achievements/achievements_page.dart';
 import 'class/class_page.dart';
@@ -21,6 +23,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+  bool _welcomeShown = false;
 
   final List<Widget> _pages = [
     const AchievementsPage(),
@@ -32,7 +35,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    // Check if welcome modal has been shown before
+    // Also allow existing persisted welcome flow if needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowWelcomeModal();
     });
@@ -78,37 +81,48 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: Container(
-        margin: EdgeInsets.all(15.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(40.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Container(
-          height: 60.h,
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+    return BlocListener<UserBloc, UserState>(
+      listenWhen: (prev, curr) => curr is UserLoaded,
+      listener: (context, state) {
+        if (state is UserLoaded) {
+          if (state.user.isNewUser && !_welcomeShown) {
+            _welcomeShown = true;
+            _showWelcomeModal();
+          }
+        }
+      },
+      child: Scaffold(
+        body: _pages[_currentIndex],
+        bottomNavigationBar: Container(
+          margin: EdgeInsets.all(15.w),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(40.r),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, 'assets/icons/achivments.svg'),
-              _buildNavItem(1, 'assets/icons/class.svg'),
-              _buildNavItem(2, 'assets/icons/tasks.svg'),
-              _buildNavItem(3, 'assets/icons/profile.svg'),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 0,
+              ),
             ],
+          ),
+          child: Container(
+            height: 60.h,
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(40.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNavItem(0, 'assets/icons/achivments.svg'),
+                _buildNavItem(1, 'assets/icons/class.svg'),
+                _buildNavItem(2, 'assets/icons/tasks.svg'),
+                _buildNavItem(3, 'assets/icons/profile.svg'),
+              ],
+            ),
           ),
         ),
       ),
